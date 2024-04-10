@@ -13,6 +13,7 @@ class Nocturne
   TLS_VERSION_12 = 3
 
   COM_QUIT = 1
+  COM_INIT_DB = 2
   COM_QUERY = 3
 
   def initialize(options = {})
@@ -22,9 +23,15 @@ class Nocturne
   end
 
   def change_db(db)
-    # TODO
-    query("USE #{db}")
+    @sock.write_packet(sequence: 0) do |packet|
+      packet.int(1, COM_INIT_DB)
+      packet.str(db)
+    end
+
+    @sock.read_packet
   end
+
+  alias select_db change_db
 
   def query(sql)
     @sock.write_packet(sequence: 0) do |packet|
