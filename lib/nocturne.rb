@@ -1,10 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "nocturne/packet"
-require_relative "nocturne/payload"
+require_relative "nocturne/read/packet"
+require_relative "nocturne/read/payload"
 require_relative "nocturne/result"
 require_relative "nocturne/socket"
 require_relative "nocturne/version"
+require_relative "nocturne/write/packet"
 
 class Nocturne
   SSL_PREFERRED_NOVERIFY = 4
@@ -32,8 +33,7 @@ class Nocturne
   private
 
   def connect
-    handshake_packet = @sock.read_packet
-    handshake_packet.payload do |handshake|
+    @sock.read_packet do |handshake|
       protocol_version = handshake.int
       server_version = handshake.nulstr
       thread_id = handshake.int(4)
@@ -48,5 +48,22 @@ class Nocturne
       auth_plutin_data2 = handshake.strn([13, auth_plugin_data_len - 8].max)
       auth_plugin_name = handshake.nulstr
     end
+
+    @sock.write_packet(sequence: 1) do |packet|
+      # TODO don't hardcode all this
+      packet.int(4, 0x018aa200) # capabilities
+      packet.int(4, 0xffffff) # max packet size
+      packet.int(1, 0x2d) #charset
+      packet.int(23, 0) #unused
+      packet.nulstr("root")
+
+      # TODO auth
+      packet.nulstr("")
+      packet.nulstr("caching_sha2_password")
+    end
+
+
+    # TODO read this for real
+    @sock.read_packet
   end
 end
