@@ -1,5 +1,4 @@
 require "nocturne"
-require "socket"
 require "timeout"
 
 require "minitest/autorun"

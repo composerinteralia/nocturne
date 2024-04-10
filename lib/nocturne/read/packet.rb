@@ -57,3 +57,5 @@ class Nocturne
   end
 end
 
+# TODO: I haven't handled packet continuations at all yet, so packets over
+# 16777206 won't work at all

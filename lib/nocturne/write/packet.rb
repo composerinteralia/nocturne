@@ -16,6 +16,10 @@ class Nocturne
         end
       end
 
+      def str(value)
+        @buffer << value
+      end
+
       def nulstr(value)
         @buffer << value
         @buffer << 0
@@ -39,7 +43,7 @@ class Nocturne
 
       def write_length
         3.times do |i|
-          byte = (@buffer.length - 4) >> i * 8
+          byte = ((@buffer.length - 4) >> i * 8) & 0xFF
           @buffer[i] = byte.chr
         end
 

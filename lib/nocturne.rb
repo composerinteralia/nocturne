@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "socket"
 require_relative "nocturne/read/packet"
 require_relative "nocturne/read/payload"
 require_relative "nocturne/result"
@@ -12,20 +13,72 @@ class Nocturne
   TLS_VERSION_12 = 3
 
   COM_QUIT = 1
+  COM_QUERY = 3
 
   def initialize(*)
     @sock = Nocturne::Socket.new
     connect
   end
 
-  def change_db(*)
+  def change_db(db)
+    # TODO
+    query("USE #{db}")
   end
 
-  def query(*)
-    Result.new
+  def query(sql)
+    @sock.write_packet(sequence: 0) do |packet|
+      packet.int(1, COM_QUERY)
+      packet.str(sql)
+    end
+
+    column_count = 0
+    @sock.read_packet do |payload|
+      unless payload.ok?
+        column_count = payload.lenenc_int
+      end
+    end
+
+    fields = []
+    rows = []
+    if column_count > 0
+      column_count.times do
+        @sock.read_packet do |column|
+          column.lenenc_str
+          column.lenenc_str
+          column.lenenc_str
+          column.lenenc_str
+          column.lenenc_str
+          name = column.lenenc_str
+          column.lenenc_int
+          column.int(2)
+          column.int(4)
+          type = column.int(1) # enum_field_types, I'll need a bunch of this for casting
+          column.int(2)
+          column.int(1)
+          fields << name
+        end
+      end
+
+      more_rows = true
+      while more_rows
+        @sock.read_packet do |row|
+          if row.eof?
+            more_rows = false
+            break
+          end
+
+          rows << column_count.times.map do
+            row.nil_or_lenenc_str
+          end
+        end
+      end
+    end
+
+    Result.new(fields, rows)
   end
 
   def ping
+    # TODO
     true
   end
 
@@ -68,7 +121,6 @@ class Nocturne
       packet.nulstr("")
       packet.nulstr("caching_sha2_password")
     end
-
 
     # TODO read this for real
     @sock.read_packet

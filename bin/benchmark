@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require_relative "../lib/nocturne"
+require 'trilogy'
+require 'benchmark/ips'
+require 'stackprof'
+
+t = Trilogy.new(host: "127.0.0.1")
+t.change_db("trilogy_test")
+
+n = Nocturne.new
+n.change_db("trilogy_test")
+
+Benchmark.ips do |bm|
+  bm.report("nocturne") do
+    n.query("SELECT * FROM users")
+  end
+
+  bm.report("trilogy") do
+    t.query("SELECT * FROM users")
+  end
+
+  bm.compare!
+end
+
+# require 'stackprof'
+# StackProf.run(mode: :cpu, out: "./tmp/stackprof-query") do
+#   50000.times do
+#     n.query("SELECT * from users")
+#   end
+# end
+
+n.close
+t.close
