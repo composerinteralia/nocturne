@@ -33,6 +33,10 @@ class Nocturne
       end
     end
 
+    def close
+      @sock.close
+    end
+
     private
 
     MAX_BYTES = 32768

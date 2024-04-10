@@ -250,6 +250,8 @@ class ClientTest < NocturneTest
 
     assert_equal ["id", "int_test"], result.fields
     assert_equal [[1, 4], [2, 3], [3, 1]], result.rows
+  ensure
+    ensure_closed client
   end
 
   def test_nocturne_query_values_with_flags

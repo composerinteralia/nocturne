@@ -11,6 +11,8 @@ class Nocturne
   SSL_PREFERRED_NOVERIFY = 4
   TLS_VERSION_12 = 3
 
+  COM_QUIT = 1
+
   def initialize(*)
     @sock = Nocturne::Socket.new
     connect
@@ -28,6 +30,11 @@ class Nocturne
   end
 
   def close
+    @sock.write_packet(sequence: 0) do |packet|
+      packet.int(1, COM_QUIT)
+    end
+
+    @sock.close
   end
 
   private
