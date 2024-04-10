@@ -21,7 +21,7 @@ class Nocturne
       def parse_fragment(fragment, offset)
         i = offset
 
-        while i < fragment.length do
+        while i < fragment.length
           case @state
           when 0
             @payload_len = fragment.getbyte(i)
@@ -50,12 +50,15 @@ class Nocturne
         @payload_len == @payload_bytes_read
       end
 
+      MAX_PAYLOAD_LEN = 0xFFFFFF
+
+      def continues?
+        @payload_len == MAX_PAYLOAD_LEN
+      end
+
       def payload
         Read::Payload.new(@payload.join)
       end
     end
   end
 end
-
-# TODO: I haven't handled packet continuations at all yet, so packets over
-# 16777206 won't work at all

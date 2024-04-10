@@ -9,7 +9,7 @@ $LOAD_PATH.unshift File.expand_path("../", __FILE__)
 if GC.respond_to?(:verify_compaction_references)
   # This method was added in Ruby 3.0.0. Calling it this way asks the GC to
   # move objects around, helping to find object movement bugs.
-  if Gem::Version::new(RUBY_VERSION) >= Gem::Version::new("3.2.0")
+  if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.2.0")
     # double_heap is deprecated and expand_heap is the updated argument. This change
     # was introduced in:
     # https://github.com/ruby/ruby/commit/a6dd859affc42b667279e513bb94fb75cfb133c1
@@ -21,7 +21,7 @@ end
 
 class NocturneTest < Minitest::Test
   DEFAULT_HOST = ENV["MYSQL_HOST"] || "127.0.0.1"
-  DEFAULT_PORT = (port = ENV["MYSQL_PORT"].to_i) && port != 0 ? port : 3306
+  DEFAULT_PORT = ((port = ENV["MYSQL_PORT"].to_i) && port != 0) ? port : 3306
   DEFAULT_USER = ENV["MYSQL_USER"] || "root"
   DEFAULT_PASS = ENV["MYSQL_PASS"]
 
@@ -45,7 +45,7 @@ class NocturneTest < Minitest::Test
       password: DEFAULT_PASS,
       ssl: true,
       ssl_mode: Nocturne::SSL_PREFERRED_NOVERIFY,
-      tls_min_version: Nocturne::TLS_VERSION_12,
+      tls_min_version: Nocturne::TLS_VERSION_12
     }.merge(opts)
 
     c = Nocturne.new defaults
@@ -57,7 +57,7 @@ class NocturneTest < Minitest::Test
     defaults = {
       username: DEFAULT_USER,
       password: DEFAULT_PASS,
-      socket: socket,
+      socket: socket
     }.merge(opts)
 
     c = Nocturne.new defaults
@@ -70,14 +70,14 @@ class NocturneTest < Minitest::Test
       host: DEFAULT_HOST,
       port: DEFAULT_PORT,
       username: DEFAULT_USER,
-      password: DEFAULT_PASS,
+      password: DEFAULT_PASS
     )
     name = k
     result = client.query("SHOW GLOBAL VARIABLES LIKE '#{client.escape name}'")
-    if result.count == 0
-      h[k] = nil
+    h[k] = if result.count == 0
+      nil
     else
-      h[k] = result.rows[0][1]
+      result.rows[0][1]
     end
   end
 
@@ -86,7 +86,7 @@ class NocturneTest < Minitest::Test
   end
 
   def ensure_closed(socket)
-    socket.close if socket
+    socket&.close
   end
 
   def create_test_table(client)

@@ -87,7 +87,7 @@ class SslTest < NocturneTest
 
     err = assert_raises Nocturne::Error do
       new_tcp_client(database: "test", ssl: true, tls_min_version: Nocturne::TLS_VERSION_10,
-                            tls_max_version: Nocturne::TLS_VERSION_10, ssl_cipher: "ECDHE-RSA-AES128-SHA")
+        tls_max_version: Nocturne::TLS_VERSION_10, ssl_cipher: "ECDHE-RSA-AES128-SHA")
     end
     assert_includes err.message, "protocol"
   end
@@ -134,7 +134,6 @@ class SslTest < NocturneTest
     assert_raises_connection_error do
       client.query "SELECT 1"
     end
-
   ensure
     Process.kill("QUIT", pid)
     Process.wait(pid)
@@ -199,7 +198,7 @@ class SslTest < NocturneTest
 
     err = assert_raises Nocturne::Error do
       new_tcp_client(username: "x509", database: "test", ssl_mode: Nocturne::SSL_VERIFY_IDENTITY,
-                     ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem")
+        ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem")
     end
     assert_includes err.message, "SSL Error: no certificate assigned"
   end
@@ -209,7 +208,7 @@ class SslTest < NocturneTest
 
     err = assert_raises Nocturne::Error do
       new_tcp_client(username: "x509", database: "test", ssl_mode: Nocturne::SSL_VERIFY_IDENTITY,
-                     ssl_ca: "#{ca_cert_path}/ca.pem", ssl_cert: "#{ca_cert_path}/client-cert.pem")
+        ssl_ca: "#{ca_cert_path}/ca.pem", ssl_cert: "#{ca_cert_path}/client-cert.pem")
     end
     assert_includes err.message, "SSL Error: no private key assigned"
   end
@@ -219,8 +218,8 @@ class SslTest < NocturneTest
 
     err = assert_raises Nocturne::Error do
       new_tcp_client(username: "x509", database: "test", ssl_mode: Nocturne::SSL_VERIFY_IDENTITY,
-                     ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem",
-                     ssl_cert: "#{ca_cert_path}/server-cert.pem")
+        ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem",
+        ssl_cert: "#{ca_cert_path}/server-cert.pem")
     end
     assert_includes err.message, "SSL Error: no private key assigned"
   end
@@ -229,8 +228,8 @@ class SslTest < NocturneTest
     return skip unless ca_cert_path
 
     client = new_tcp_client(username: "x509", database: "test", ssl_mode: Nocturne::SSL_VERIFY_IDENTITY,
-                            ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem",
-                            ssl_cert: "#{ca_cert_path}/client-cert.pem")
+      ssl_ca: "#{ca_cert_path}/ca.pem", ssl_key: "#{ca_cert_path}/client-key.pem",
+      ssl_cert: "#{ca_cert_path}/client-cert.pem")
     result = client.query "SELECT CURRENT_USER()"
     assert_equal [["x509@%"]], result.to_a
   ensure

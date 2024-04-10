@@ -61,7 +61,7 @@ class ClientTest < NocturneTest
       password: DEFAULT_PASS,
       ssl: true,
       ssl_mode: 4,
-      tls_min_version: 3,
+      tls_min_version: 3
     }
     assert_equal expected_connection_options, client.connection_options
   end
@@ -123,7 +123,7 @@ class ClientTest < NocturneTest
     client.query_with_flags("SELECT 1", client.query_flags) # warm up
 
     row_count = 1000
-    sql = (1..row_count).map{|i| "SELECT #{i}" }.join(" UNION ")
+    sql = (1..row_count).map { |i| "SELECT #{i}" }.join(" UNION ")
 
     query_allocations = allocations { client.query_with_flags(sql, client.query_flags) }
     flatten_rows_allocations = allocations { client.query_with_flags(sql, client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS) }
@@ -155,7 +155,7 @@ class ClientTest < NocturneTest
 
     results << client.query("SELECT id, int_test FROM nocturne_test WHERE id = 1; SELECT id, int_test FROM nocturne_test WHERE id IN (2, 3); SELECT id, int_test FROM nocturne_test")
 
-    while (client.more_results_exist?) do
+    while client.more_results_exist?
       results << client.next_result
     end
 
@@ -177,7 +177,7 @@ class ClientTest < NocturneTest
     result = client.query("SELECT id, int_test FROM nocturne_test")
     next_result = client.next_result
 
-    assert_equal [{ "id" => 1, "int_test" => 4 }], result.each_hash.to_a
+    assert_equal [{"id" => 1, "int_test" => 4}], result.each_hash.to_a
 
     assert_nil next_result
   end
@@ -191,11 +191,11 @@ class ClientTest < NocturneTest
 
     result = client.query("CALL test_proc()")
 
-    assert_equal([{ 'set_1' => 1 }], result.each_hash.to_a)
+    assert_equal([{"set_1" => 1}], result.each_hash.to_a)
     assert client.more_results_exist?
 
     result = client.next_result
-    assert_equal([{ 'set_2' => 2 }], result.each_hash.to_a)
+    assert_equal([{"set_2" => 2}], result.each_hash.to_a)
 
     result = client.next_result
     assert_equal([], result.each_hash.to_a)
@@ -326,7 +326,7 @@ class ClientTest < NocturneTest
 
     assert_equal ["a", "b"], result.fields
     assert_equal [[1, 2]], result.rows
-    assert_equal [{ "a" => 1, "b" => 2 }], result.each_hash.to_a
+    assert_equal [{"a" => 1, "b" => 2}], result.each_hash.to_a
     assert_equal [[1, 2]], result.to_a
     assert_kind_of Float, result.query_time
     assert_in_delta 0.1, result.query_time, 0.1
@@ -391,7 +391,7 @@ class ClientTest < NocturneTest
   end
 
   def test_nocturne_affected_rows_in_found_rows_mode
-    client = new_tcp_client(:found_rows => true)
+    client = new_tcp_client(found_rows: true)
     create_test_table(client)
 
     client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('a', 1)")
@@ -445,7 +445,7 @@ class ClientTest < NocturneTest
     assert_equal "hello", client.escape("hello")
 
     assert_equal "\\\"\\0\\'\\\\\\n\\r\\Z",
-      client.escape("\"\0\'\\\n\r\x1A")
+      client.escape("\"\0'\\\n\r\x1A")
 
     assert_equal "\xff", client.escape("\xff")
 
@@ -461,7 +461,6 @@ class ClientTest < NocturneTest
     assert_raises Encoding::CompatibilityError do
       client.escape("'\"\\".encode("UTF-16LE"))
     end
-
   ensure
     ensure_closed client
   end
@@ -514,7 +513,7 @@ class ClientTest < NocturneTest
 
   def test_adjustable_read_timeout
     client = new_tcp_client(read_timeout: 5)
-    assert client.query("SELECT SLEEP(0.2)");
+    assert client.query("SELECT SLEEP(0.2)")
     client.read_timeout = 0.1
     assert_equal 0.1, client.read_timeout
     assert_raises Nocturne::TimeoutError do
@@ -623,7 +622,7 @@ class ClientTest < NocturneTest
     client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('c', 2)")
 
     assert_raises Timeout::Error do
-      Timeout::timeout(0.1) do
+      Timeout.timeout(0.1) do
         client.query("SELECT SLEEP(1)")
       end
     end
@@ -645,7 +644,7 @@ class ClientTest < NocturneTest
       client = new_tcp_client
 
       assert_raises Timeout::Error do
-        Timeout::timeout(0.1) do
+        Timeout.timeout(0.1) do
           client.query("SELECT SLEEP(1)")
         end
       end
@@ -682,7 +681,7 @@ class ClientTest < NocturneTest
     client.close
 
     err = assert_raises Nocturne::ConnectionClosed do
-      client.query("SELECT 1");
+      client.query("SELECT 1")
     end
 
     assert_equal "Attempted to use closed connection", err.message
@@ -950,8 +949,16 @@ class ClientTest < NocturneTest
 
     # Run these in case we're still in OFF mode to go step by step to ON
     client.query "SET GLOBAL server_id = 1"
-    client.query "SET GLOBAL gtid_mode = OFF_PERMISSIVE" rescue nil
-    client.query "SET GLOBAL gtid_mode = ON_PERMISSIVE" rescue nil
+    begin
+      client.query "SET GLOBAL gtid_mode = OFF_PERMISSIVE"
+    rescue
+      nil
+    end
+    begin
+      client.query "SET GLOBAL gtid_mode = ON_PERMISSIVE"
+    rescue
+      nil
+    end
     client.query "SET GLOBAL enforce_gtid_consistency = ON"
     client.query "SET GLOBAL gtid_mode = ON"
     client.query "SET SESSION session_track_gtids = OWN_GTID"
@@ -959,7 +966,7 @@ class ClientTest < NocturneTest
     create_test_table(client)
     client.query "TRUNCATE nocturne_test"
 
-    result = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
+    client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
     last_gtid = client.last_gtid
 
     result = client.query "SHOW GLOBAL VARIABLES LIKE 'gtid_executed'"
@@ -988,7 +995,7 @@ class ClientTest < NocturneTest
   end
 
   def test_memsize
-    require 'objspace'
+    require "objspace"
     client = new_tcp_client
     assert_kind_of Integer, ObjectSpace.memsize_of(client)
   end
@@ -1122,7 +1129,7 @@ class ClientTest < NocturneTest
       port: DEFAULT_PORT.to_s,
       username: DEFAULT_USER,
       password: DEFAULT_PASS,
-      ssl: "1",
+      ssl: "1"
     }
     client = new_tcp_client(**options)
 

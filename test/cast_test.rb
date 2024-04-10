@@ -29,7 +29,7 @@ class CastTest < NocturneTest
 
     assert_equal [
       ["\x00\x00\x00\x00\x00\x00\x00\x00".b, "\x00"],
-      ["\x00\x00\x00\x00\x00\x00\x00\x01".b, "\x01"],
+      ["\x00\x00\x00\x00\x00\x00\x00\x01".b, "\x01"]
     ], results
 
     @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_BOOLEANS
@@ -52,7 +52,7 @@ class CastTest < NocturneTest
 
     assert_equal [
       [0, 0],
-      [1, 1],
+      [1, 1]
     ], results
 
     @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_BOOLEANS
@@ -100,7 +100,7 @@ class CastTest < NocturneTest
       SELECT tiny_int_test, small_int_test, medium_int_test, int_test, big_int_test, unsigned_big_int_test FROM nocturne_test
     SQL
 
-    assert_equal [[127, 32767, 8388607,  2147483647, 9223372036854775807, 18446744073709551615]], results
+    assert_equal [[127, 32767, 8388607, 2147483647, 9223372036854775807, 18446744073709551615]], results
   end
 
   def test_integer_range_min
@@ -125,7 +125,7 @@ class CastTest < NocturneTest
       SELECT int_test FROM nocturne_test ORDER BY id ASC
     SQL
 
-    assert_equal [ [1], [2], [3] ], results
+    assert_equal [[1], [2], [3]], results
 
     results = @client.query(<<-SQL).to_a
       SELECT SUM(int_test) FROM nocturne_test
@@ -144,7 +144,7 @@ class CastTest < NocturneTest
       SELECT int_test FROM nocturne_test ORDER BY id ASC
     SQL
 
-    assert_equal [ [1], [2], [3] ], results
+    assert_equal [[1], [2], [3]], results
 
     @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS
 
@@ -420,14 +420,14 @@ class CastTest < NocturneTest
   def test_everything_else_casts_to_string
     value = "hello"
 
-    text_columns = %w(
+    text_columns = %w[
       char_test
       varchar_test
       tiny_text_test
       text_test
       medium_text_test
       long_text_test
-    )
+    ]
 
     text_columns.each do |column|
       create_test_table(@client)
@@ -446,13 +446,13 @@ class CastTest < NocturneTest
       assert_equal Encoding::UTF_8, results[0][0].encoding
     end
 
-    binary_columns = %w(
+    binary_columns = %w[
       varbinary_test
       tiny_blob_test
       blob_test
       medium_blob_test
       long_blob_test
-    )
+    ]
 
     binary_columns.each do |column|
       create_test_table(@client)
@@ -471,7 +471,7 @@ class CastTest < NocturneTest
       assert_equal Encoding::ASCII_8BIT, results[0][0].encoding
     end
 
-    member_columns = %w(enum_test set_test)
+    member_columns = %w[enum_test set_test]
 
     value = "val1"
 

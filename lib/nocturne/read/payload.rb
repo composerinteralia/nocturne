@@ -6,7 +6,7 @@ class Nocturne
         @pos = 0
       end
 
-      def int(bytes=1)
+      def int(bytes = 1)
         result = 0
 
         bytes.times do |i|

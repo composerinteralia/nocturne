@@ -27,6 +27,7 @@ class Nocturne
         @pos += packet.parse_fragment(@read_buffer, @pos)
 
         if packet.complete?
+          # TODO: If packet continues, maybe wrap them all up into a grouped thing?
           yield packet.payload if block_given?
           return packet
         end
