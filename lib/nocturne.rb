@@ -15,8 +15,9 @@ class Nocturne
   COM_QUIT = 1
   COM_QUERY = 3
 
-  def initialize(*)
-    @sock = Nocturne::Socket.new
+  def initialize(options = {})
+    @options = options
+    @sock = Nocturne::Socket.new(options)
     connect
   end
 
@@ -68,6 +69,7 @@ class Nocturne
           end
 
           rows << column_count.times.map do
+            # TODO casting based on column details
             row.nil_or_lenenc_str
           end
         end
@@ -106,7 +108,7 @@ class Nocturne
       auth_plugin_data_len = handshake.int
       handshake.strn(10)
       auth_plutin_data2 = handshake.strn([13, auth_plugin_data_len - 8].max)
-      auth_plugin_name = handshake.nulstr
+      @auth_plugin_name = handshake.nulstr
     end
 
     @sock.write_packet(sequence: 1) do |packet|
@@ -115,11 +117,11 @@ class Nocturne
       packet.int(4, 0xffffff) # max packet size
       packet.int(1, 0x2d) #charset
       packet.int(23, 0) #unused
-      packet.nulstr("root")
+      packet.nulstr(@options[:username] || "root")
 
       # TODO auth
       packet.nulstr("")
-      packet.nulstr("caching_sha2_password")
+      packet.nulstr(@auth_plugin_name)
     end
 
     # TODO read this for real
