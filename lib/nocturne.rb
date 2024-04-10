@@ -15,6 +15,7 @@ class Nocturne
   COM_QUIT = 1
   COM_INIT_DB = 2
   COM_QUERY = 3
+  COM_PING = 14
 
   def initialize(options = {})
     @options = options
@@ -87,8 +88,11 @@ class Nocturne
   end
 
   def ping
-    # TODO
-    true
+    @sock.write_packet(sequence: 0) do |packet|
+      packet.int(1, COM_PING)
+    end
+
+    @sock.read_packet
   end
 
   def close
