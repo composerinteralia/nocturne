@@ -2,7 +2,7 @@ class Nocturne
   class Socket
     def initialize(options)
       @sock = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM)
-      @sock.connect ::Socket.pack_sockaddr_in(options[:port], options[:host])
+      @sock.connect ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || 'localhost')
       @write_buffer = "".b
       @read_buffer = "".b
       @pos = 0

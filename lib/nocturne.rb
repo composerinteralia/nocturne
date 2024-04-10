@@ -111,12 +111,12 @@ class Nocturne
       _server_version = handshake.nulstr
       _thread_id = handshake.int(4)
       _auth_plugin_data1 = handshake.strn(8)
-      _handshake.strn(1)
+      handshake.strn(1)
       _capabilities = handshake.int(2)
       _character_set = handshake.int
       _status_flags = handshake.int(2)
       _capabilities2 = handshake.int(2)
-      _auth_plugin_data_len = handshake.int
+      auth_plugin_data_len = handshake.int
       handshake.strn(10)
       _auth_plutin_data2 = handshake.strn([13, auth_plugin_data_len - 8].max)
       @auth_plugin_name = handshake.nulstr
