@@ -66,12 +66,22 @@ class Nocturne
         end
       end
 
+      def eof_str
+        @payload[@pos...].tap do
+          @pos = @payload.length
+        end
+      end
+
       def eof?
         @payload.getbyte(0) == 0xFE && @payload.length < 9
       end
 
       def ok?
         @payload.getbyte(0) == 0
+      end
+
+      def err?
+        @payload.getbyte(0) == 0xFF
       end
     end
   end

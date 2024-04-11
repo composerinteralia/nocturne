@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "socket"
+require_relative "nocturne/error"
 require_relative "nocturne/read/packet"
 require_relative "nocturne/read/payload"
 require_relative "nocturne/result"
@@ -16,6 +17,8 @@ class Nocturne
   COM_INIT_DB = 2
   COM_QUERY = 3
   COM_PING = 14
+
+  attr_reader :server_version
 
   def initialize(options = {})
     @options = options
@@ -108,7 +111,7 @@ class Nocturne
   def connect
     @sock.read_packet do |handshake|
       _protocol_version = handshake.int
-      _server_version = handshake.nulstr
+      @server_version = handshake.nulstr
       _thread_id = handshake.int(4)
       _auth_plugin_data1 = handshake.strn(8)
       handshake.strn(1)
@@ -131,11 +134,45 @@ class Nocturne
       packet.nulstr(@options[:username] || "root")
 
       # TODO auth
-      packet.nulstr("")
+      packet.int(1, 0)
+      # packet.str("")
       packet.nulstr(@auth_plugin_name)
     end
 
-    # TODO read this for real
-    @sock.read_packet
+    @sock.read_packet do |packet|
+      if packet.ok?
+        return
+      elsif packet.err?
+        code, message = read_error(packet)
+        raise ConnectionError, "#{code}: #{message}"
+      elsif packet.int == 0xFE # auth switch
+        plugin = packet.nulstr
+        data = packet.eof_str
+        auth_switch(plugin, data)
+      end
+    end
+  end
+
+  def auth_switch(plugin, data)
+    @sock.write_packet(sequence: 3) do |packet|
+      # TODO auth
+      packet.str("a" * 20)
+    end
+
+    @sock.read_packet do |packet|
+      if packet.err?
+        code, message = read_error(packet)
+        raise ConnectionError, "#{code}: #{message}"
+      end
+    end
+  end
+
+  def read_error(packet)
+    packet.int
+    code = packet.int(2)
+    packet.strn(1)
+    packet.strn(5)
+    message = packet.eof_str
+    [code, message]
   end
 end
