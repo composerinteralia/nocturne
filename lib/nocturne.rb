@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "socket"
+require "digest"
 require_relative "nocturne/error"
 require_relative "nocturne/read/packet"
 require_relative "nocturne/read/payload"
@@ -113,7 +114,7 @@ class Nocturne
       _protocol_version = handshake.int
       @server_version = handshake.nulstr
       _thread_id = handshake.int(4)
-      _auth_plugin_data1 = handshake.strn(8)
+      auth_plugin_data = handshake.strn(8)
       handshake.strn(1)
       _capabilities = handshake.int(2)
       _character_set = handshake.int
@@ -121,7 +122,7 @@ class Nocturne
       _capabilities2 = handshake.int(2)
       auth_plugin_data_len = handshake.int
       handshake.strn(10)
-      _auth_plutin_data2 = handshake.strn([13, auth_plugin_data_len - 8].max)
+      @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max)
       @auth_plugin_name = handshake.nulstr
     end
 
@@ -133,9 +134,13 @@ class Nocturne
       packet.int(23, 0) # unused
       packet.nulstr(@options[:username] || "root")
 
-      # TODO auth
-      packet.int(1, 0)
-      # packet.str("")
+      if @auth_plugin_name == "mysql_native_password" && password?
+        packet.int(1, 20)
+        packet.str(mysql_native_password(@auth_plugin_data))
+      else
+        packet.int(1, 0)
+      end
+
       packet.nulstr(@auth_plugin_name)
     end
 
@@ -155,8 +160,11 @@ class Nocturne
 
   def auth_switch(plugin, data)
     @sock.write_packet(sequence: 3) do |packet|
-      # TODO auth
-      packet.str("a" * 20)
+      if plugin == "mysql_native_password"
+        packet.str(mysql_native_password(data)) if password?
+      else
+        raise "unknown auth plugin"
+      end
     end
 
     @sock.read_packet do |packet|
@@ -165,6 +173,23 @@ class Nocturne
         raise ConnectionError, "#{code}: #{message}"
       end
     end
+  end
+
+  def password?
+    @options[:password] && @options[:password].length > 0
+  end
+
+  def mysql_native_password(scramble)
+    scramble = scramble.strip! # nul terminator
+    password_digest = Digest::SHA1.digest(@options[:password] || "")
+    password_double_digest = Digest::SHA1.digest(password_digest)
+    scramble_digest = Digest::SHA1.digest(scramble + password_double_digest)
+
+    bytes = password_digest.length.times.map do |i|
+      password_digest.getbyte(i) ^ scramble_digest.getbyte(i)
+    end
+
+    bytes.pack("C*")
   end
 
   def read_error(packet)
