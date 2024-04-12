@@ -37,7 +37,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up MySQL users
-      run:  mysql -u root --host=127.0.0.1 < ${{ github.workspace }}/test/mysql/native_user.sql 
+      run:  |
+        mysql --user=root --host=127.0.0.1 < ${{ github.workspace }}/test/mysql/native_user.sql
+        mysql --user=root --host=127.0.0.1 --execute 'CREATE DATABASE test'
+
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
