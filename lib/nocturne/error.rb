@@ -6,4 +6,7 @@ class Nocturne
 
   class ConnectionError < Error
   end
+
+  class QueryError < Error
+  end
 end

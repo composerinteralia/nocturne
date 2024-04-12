@@ -20,6 +20,8 @@ class Nocturne
         @sock.read_packet do |payload|
           if payload.ok?
             # Done. No results.
+          elsif payload.err?
+            raise Protocol.error(payload, QueryError)
           else
             column_count = payload.lenenc_int
           end

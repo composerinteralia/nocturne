@@ -3,6 +3,7 @@
 require "socket"
 require "digest"
 require_relative "nocturne/error"
+require_relative "nocturne/protocol"
 require_relative "nocturne/protocol/connection"
 require_relative "nocturne/protocol/query"
 require_relative "nocturne/read/packet"
@@ -39,7 +40,9 @@ class Nocturne
       packet.str(db)
     end
 
-    @sock.read_packet
+    @sock.read_packet do |payload|
+      raise Protocol.error(payload, Error) if payload.err?
+    end
   end
 
   alias_method :select_db, :change_db
@@ -55,7 +58,9 @@ class Nocturne
       packet.int(1, COM_PING)
     end
 
-    @sock.read_packet
+    @sock.read_packet do |payload|
+      raise Protocol.error(payload, Error) if payload.err?
+    end
   end
 
   def close

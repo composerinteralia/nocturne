@@ -18,8 +18,7 @@ class Nocturne
           if packet.ok?
             return
           elsif packet.err?
-            code, message = read_error(packet)
-            raise ConnectionError, "#{code}: #{message}"
+            raise Protocol.error(payload, ConnectionError)
           elsif packet.int == 0xFE # auth switch
             plugin = packet.nulstr
             data = packet.eof_str
@@ -83,11 +82,8 @@ class Nocturne
           end
         end
 
-        @sock.read_packet do |packet|
-          if packet.err?
-            code, message = read_error(packet)
-            raise ConnectionError, "#{code}: #{message}"
-          end
+        @sock.read_packet do |payload|
+          raise Protocol.error(payload, ConnectionError) if payload.err?
         end
       end
 
@@ -106,15 +102,6 @@ class Nocturne
         end
 
         bytes.pack("C*")
-      end
-
-      def read_error(packet)
-        packet.int
-        code = packet.int(2)
-        packet.strn(1)
-        packet.strn(5)
-        message = packet.eof_str
-        [code, message]
       end
     end
   end
