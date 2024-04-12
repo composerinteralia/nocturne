@@ -29,7 +29,9 @@ class Nocturne
   end
 
   def change_db(db)
-    @sock.write_packet(sequence: 0) do |packet|
+    @sock.begin_command
+
+    @sock.write_packet do |packet|
       packet.int(1, COM_INIT_DB)
       packet.str(db)
     end
@@ -40,7 +42,9 @@ class Nocturne
   alias_method :select_db, :change_db
 
   def query(sql)
-    @sock.write_packet(sequence: 0) do |packet|
+    @sock.begin_command
+
+    @sock.write_packet do |packet|
       packet.int(1, COM_QUERY)
       packet.str(sql)
     end
@@ -93,7 +97,9 @@ class Nocturne
   end
 
   def ping
-    @sock.write_packet(sequence: 0) do |packet|
+    @sock.begin_command
+
+    @sock.write_packet do |packet|
       packet.int(1, COM_PING)
     end
 
@@ -101,7 +107,9 @@ class Nocturne
   end
 
   def close
-    @sock.write_packet(sequence: 0) do |packet|
+    @sock.begin_command
+
+    @sock.write_packet do |packet|
       packet.int(1, COM_QUIT)
     end
 

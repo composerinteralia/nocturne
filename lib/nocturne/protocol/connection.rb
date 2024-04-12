@@ -49,7 +49,7 @@ class Nocturne
       end
 
       def client_handshake
-        @sock.write_packet(sequence: 1) do |packet|
+        @sock.write_packet do |packet|
           # TODO don't hardcode all this
           packet.int(4, 0x018aa200) # capabilities
           packet.int(4, 0xffffff) # max packet size
@@ -71,8 +71,7 @@ class Nocturne
       private
 
       def auth_switch(plugin, data)
-        # TODO: don't hard-code sequences
-        @sock.write_packet(sequence: 3) do |packet|
+        @sock.write_packet do |packet|
           if plugin == "mysql_native_password"
             packet.str(mysql_native_password(data)) if password?
           else
