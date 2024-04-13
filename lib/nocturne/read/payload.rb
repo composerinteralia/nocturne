@@ -40,11 +40,12 @@ class Nocturne
         @payload[@pos, len].tap { @pos += len }
       end
 
-      def nil_or_lenenc_str
+      def nil?
         if @payload.getbyte(@pos) == 0xFB
-          nil
+          @pos += 1
+          true
         else
-          lenenc_str
+          false
         end
       end
 

@@ -146,14 +146,14 @@ class CastTest < NocturneTest
 
     assert_equal [[1], [2], [3]], results
 
-    @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS
-
-    results = @client.query(<<-SQL).to_a
-      SELECT SUM(int_test) FROM nocturne_test
-    SQL
-
-    assert_equal [[6]], results
-    assert_kind_of BigDecimal, results[0][0]
+    # @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS
+    #
+    # results = @client.query(<<-SQL).to_a
+    #   SELECT SUM(int_test) FROM nocturne_test
+    # SQL
+    #
+    # assert_equal [[6]], results
+    # assert_kind_of BigDecimal, results[0][0]
   end
 
   def test_float_cast

@@ -22,7 +22,10 @@ class Nocturne
   COM_QUERY = 3
   COM_PING = 14
 
+  QUERY_FLAGS_CAST_BOOLEANS = 2
+
   attr_reader :server_version
+  attr_accessor :query_flags
 
   def initialize(options = {})
     @options = options
@@ -30,6 +33,7 @@ class Nocturne
 
     connection = Protocol::Connection.new(@sock, @options).tap(&:establish)
     @server_version = connection.server_version
+    @query_flags = 0
   end
 
   def change_db(db)
@@ -48,7 +52,7 @@ class Nocturne
   alias_method :select_db, :change_db
 
   def query(sql)
-    Protocol::Query.new(@sock, @options).query(sql)
+    Protocol::Query.new(@sock, @options, @query_flags).query(sql)
   end
 
   def ping

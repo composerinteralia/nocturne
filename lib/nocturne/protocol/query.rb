@@ -1,11 +1,14 @@
 #frozen_string_literal: true
 
+require "bigdecimal"
+
 class Nocturne
   module Protocol
     class Query
-      def initialize(sock, options)
+      def initialize(sock, options, flags)
         @sock = sock
         @options = options
+        @flags = flags
       end
 
       def query(sql)
@@ -27,15 +30,18 @@ class Nocturne
           end
         end
 
-        fields = read_fields(column_count)
+        @columns = read_columns(column_count)
+        fields = @columns.map(&:name)
         rows = read_rows(column_count)
         Result.new(fields, rows)
       end
 
       private
 
-      def read_fields(column_count)
-        fields = []
+      Column = Data.define(:name, :charset, :len, :type, :flags, :decimals)
+
+      def read_columns(column_count)
+        columns = []
 
         column_count.times do
           @sock.read_packet do |column|
@@ -46,16 +52,17 @@ class Nocturne
             column.lenenc_str
             name = column.lenenc_str
             column.lenenc_int
-            column.int(2)
-            column.int(4)
-            _type = column.int(1) # enum_field_types, I'll need a bunch of this for casting
-            column.int(2)
-            column.int(1)
-            fields << name
+            charset = column.int(2)
+            len = column.int(4)
+            type = column.int(1)
+            flags = column.int(2)
+            decimals = column.int(1)
+
+            columns << Column.new(name, charset, len, type, flags, decimals)
           end
         end
 
-        fields
+        columns
       end
 
       def read_rows(column_count)
@@ -78,10 +85,57 @@ class Nocturne
         rows
       end
 
+      DECIMAL = 0
+      TINY = 1
+      SHORT = 2
+      LONG = 3
+      FLOAT = 4
+      DOUBLE = 5
+      # TIMESTAMP = 7
+      LONGLONG = 8
+      INT24 = 9
+      BIT = 0x10
+      # DATE = 0x0a
+      # TIME = 0x0b
+      # DATETIME = 0x0c
+      YEAR = 0x0d
+      NEWDECIMAL = 0xf6
+
       def read_row(column_count, row)
-        column_count.times.map do
-          # TODO casting based on column details
-          row.nil_or_lenenc_str
+        column_count.times.map { |i| cast_value(row, @columns[i]) }
+      end
+
+      def cast_value(row, column)
+        return if row.nil?
+
+        # TODO: try to write these without all the extra strings
+        case column.type
+        when BIT
+          if column.len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
+            raise "unexpected int" if row.lenenc_int != 1
+            row.int.zero? ? false : true
+          else
+            row.lenenc_str
+          end
+        when TINY
+          if column.len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
+            raise "unexpected int" if row.lenenc_int != 1
+            row.strn(1) == "0" ? false : true
+          else
+            row.lenenc_str.to_i
+          end
+        when SHORT, LONG, LONGLONG, INT24, YEAR
+          row.lenenc_str.to_i
+        when DECIMAL, NEWDECIMAL
+          if column.decimals.zero?
+            Integer(row.lenenc_str)
+          else
+            BigDecimal(row.lenenc_str)
+          end
+        when FLOAT, DOUBLE
+          Float(row.lenenc_str)
+        else
+          row.lenenc_str
         end
       end
     end
