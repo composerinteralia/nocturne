@@ -20,8 +20,8 @@ class Nocturne
           elsif packet.err?
             raise Protocol.error(payload, ConnectionError)
           elsif packet.int == 0xFE # auth switch
-            plugin = packet.nulstr
-            data = packet.eof_str
+            plugin = packet.nulstr.get_string
+            data = packet.eof_str.get_string
             auth_switch(plugin, data)
           else
             raise "unkwown packet"
@@ -34,7 +34,7 @@ class Nocturne
           _protocol_version = handshake.int
           @server_version = handshake.nulstr
           _thread_id = handshake.int(4)
-          auth_plugin_data = handshake.strn(8)
+          auth_plugin_data = handshake.strn(8).get_string
           handshake.strn(1)
           _capabilities = handshake.int(2)
           _character_set = handshake.int
@@ -42,8 +42,8 @@ class Nocturne
           _capabilities2 = handshake.int(2)
           auth_plugin_data_len = handshake.int
           handshake.strn(10)
-          @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max)
-          @auth_plugin_name = handshake.nulstr
+          @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max).get_string
+          @auth_plugin_name = handshake.nulstr.get_string
         end
       end
 

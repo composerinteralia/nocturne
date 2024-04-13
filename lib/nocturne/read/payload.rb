@@ -10,7 +10,7 @@ class Nocturne
         result = 0
 
         bytes.times do |i|
-          result |= @payload.getbyte(@pos) << (8 * i)
+          result |= getbyte(@pos) << (8 * i)
           @pos += 1
         end
 
@@ -18,7 +18,7 @@ class Nocturne
       end
 
       def lenenc_int
-        case @payload.getbyte(@pos)
+        case getbyte(@pos)
         when 0xFC
           @pos += 1
           int(2)
@@ -37,11 +37,11 @@ class Nocturne
 
       def lenenc_str
         len = lenenc_int
-        @payload[@pos, len].tap { @pos += len }
+        @payload.slice(@pos, len).tap { @pos += len }
       end
 
       def nil?
-        if @payload.getbyte(@pos) == 0xFB
+        if getbyte(@pos) == 0xFB
           @pos += 1
           true
         else
@@ -52,37 +52,43 @@ class Nocturne
       def nulstr
         start = @pos
 
-        until @payload.getbyte(@pos).zero?
+        until getbyte(@pos).zero?
           @pos += 1
         end
 
-        @payload[start...@pos].tap do
+        @payload.slice(start, @pos - start).tap do
           @pos += 1
         end
       end
 
       def strn(n)
-        @payload[@pos, n].tap do
+        @payload.slice(@pos, n).tap do
           @pos += n
         end
       end
 
       def eof_str
-        @payload[@pos...].tap do
-          @pos = @payload.length
+        @payload.slice(@pos).tap do
+          @pos = @payload.size
         end
       end
 
       def eof?
-        @payload.getbyte(0) == 0xFE && @payload.length < 9
+        getbyte(0) == 0xFE && @payload.size < 9
       end
 
       def ok?
-        @payload.getbyte(0) == 0
+        getbyte(0) == 0
       end
 
       def err?
-        @payload.getbyte(0) == 0xFF
+        getbyte(0) == 0xFF
+      end
+
+      private
+
+      def getbyte(offset)
+        @payload.get_value(:U8, offset)
       end
     end
   end

@@ -57,7 +57,7 @@ class Nocturne
       end
 
       def payload
-        Read::Payload.new(@payload.join)
+        Read::Payload.new(IO::Buffer.for(@payload.join))
       end
     end
   end

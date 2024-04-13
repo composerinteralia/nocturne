@@ -50,7 +50,7 @@ class Nocturne
             column.lenenc_str
             column.lenenc_str
             column.lenenc_str
-            name = column.lenenc_str
+            name = column.lenenc_str.get_string
             column.lenenc_int
             charset = column.int(2)
             len = column.int(4)
@@ -115,27 +115,64 @@ class Nocturne
             raise "unexpected int" if row.lenenc_int != 1
             row.int.zero? ? false : true
           else
-            row.lenenc_str
+            row.lenenc_str.get_string
           end
         when TINY
           if column.len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
-            row.strn(1) == "0" ? false : true
+            row.int == "0".ord ? false : true
           else
-            row.lenenc_str.to_i
+            row.lenenc_int.times.inject(0) do |n|
+              n *= 10
+              n += (row.int - "0".ord)
+            end
           end
         when SHORT, LONG, LONGLONG, INT24, YEAR
-          row.lenenc_str.to_i
+          # TODO Definitely broken for negative
+          row.lenenc_int.times.inject(0) do |n|
+            n *= 10
+            n += (row.int - "0".ord)
+          end
         when DECIMAL, NEWDECIMAL
+          # TODO Definitely broken for negative
           if column.decimals.zero?
-            Integer(row.lenenc_str)
+            row.lenenc_int.times.inject(0) do |n|
+              n *= 10
+              n += (row.int - "0".ord)
+            end
           else
-            BigDecimal(row.lenenc_str)
+            decimal_place = false
+            row.lenenc_int.times.inject(BigDecimal(0)) do |n|
+              byte = row.int
+              if decimal_place
+                n += (byte - "0".ord).fdiv(decimal_place)
+                decimal_place *= 10
+              elsif byte == ".".ord
+                decimal_place = 10
+              else
+                n *= 10
+                n += (byte - "0".ord)
+              end
+              n
+            end
           end
         when FLOAT, DOUBLE
-          Float(row.lenenc_str)
+          decimal_place = false
+          row.lenenc_int.times.inject(0.to_f) do |n|
+            byte = row.int
+            if decimal_place
+              n += (byte - "0".ord).fdiv(decimal_place)
+              decimal_place *= 10
+            elsif byte == ".".ord
+              decimal_place = 10
+            else
+              n *= 10
+              n += (byte - "0".ord)
+            end
+            n
+          end
         else
-          row.lenenc_str
+          row.lenenc_str.get_string
         end
       end
     end

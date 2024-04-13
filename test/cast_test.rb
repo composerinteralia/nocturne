@@ -146,6 +146,13 @@ class CastTest < NocturneTest
 
     assert_equal [[1], [2], [3]], results
 
+    results = @client.query(<<-SQL).to_a
+      SELECT SUM(int_test) FROM nocturne_test
+    SQL
+
+    assert_equal [[6]], results
+    assert_kind_of Integer, results[0][0]
+
     # @client.query_flags |= Nocturne::QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS
     #
     # results = @client.query(<<-SQL).to_a
