@@ -31,14 +31,12 @@ class Nocturne
         end
 
         @columns = read_columns(column_count)
-        fields = @columns.map(&:name)
+        fields = @columns.map(&:first)
         rows = read_rows(column_count)
         Result.new(fields, rows)
       end
 
       private
-
-      Column = Data.define(:name, :charset, :len, :type, :flags, :decimals)
 
       def read_columns(column_count)
         columns = []
@@ -58,7 +56,7 @@ class Nocturne
             flags = column.int(2)
             decimals = column.int(1)
 
-            columns << Column.new(name, charset, len, type, flags, decimals)
+            columns << [name, charset, len, type, flags, decimals]
           end
         end
 
@@ -107,19 +105,22 @@ class Nocturne
 
       def cast_value(row, column)
         return if row.nil?
-        # return row.lenenc_str if casting is disabled
+        # return row.lenenc_str #if casting is disabled
 
-        # TODO: try to write these without all the extra strings
-        case column.type
+        name, charset, len, type, flags, decimals = column
+
+        # TODO: maybe try to write these without all the extra strings, although
+        # casting is not the slowest thing here
+        case type
         when BIT
-          if column.len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
+          if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
             row.int.zero? ? false : true
           else
             row.lenenc_str
           end
         when TINY
-          if column.len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
+          if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
             row.strn(1) == "0" ? false : true
           else
@@ -128,7 +129,7 @@ class Nocturne
         when SHORT, LONG, LONGLONG, INT24, YEAR
           row.lenenc_str.to_i
         when DECIMAL, NEWDECIMAL
-          if column.decimals.zero?
+          if decimals.zero?
             Integer(row.lenenc_str)
           else
             BigDecimal(row.lenenc_str)
