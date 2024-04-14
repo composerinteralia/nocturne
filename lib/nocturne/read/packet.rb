@@ -57,7 +57,7 @@ class Nocturne
       end
 
       def payload
-        Read::Payload.new(@payload.join)
+        Read::Payload.new(@payload.length == 1 ? @payload.first : @payload.join)
       end
     end
   end

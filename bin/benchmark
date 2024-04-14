@@ -10,25 +10,107 @@ t.change_db("trilogy_test")
 
 n = Nocturne.new
 n.change_db("trilogy_test")
+n.query("DROP TABLE IF EXISTS nocturne_test")
+n.query(<<-SQL)
+  CREATE TABLE `nocturne_test` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `null_test` VARCHAR(10) DEFAULT NULL,
+    `bit_test` BIT(64) DEFAULT NULL,
+    `single_bit_test` BIT(1) DEFAULT NULL,
+    `tiny_int_test` TINYINT(4) DEFAULT NULL,
+    `bool_cast_test` TINYINT(1) DEFAULT NULL,
+    `small_int_test` SMALLINT(6) DEFAULT NULL,
+    `medium_int_test` MEDIUMINT(9) DEFAULT NULL,
+    `int_test` INT(11) DEFAULT NULL,
+    `big_int_test` BIGINT(20) DEFAULT NULL,
+    `unsigned_big_int_test` BIGINT(20) UNSIGNED DEFAULT NULL,
+    `float_test` FLOAT(10,3) DEFAULT NULL,
+    `float_zero_test` FLOAT(10,3) DEFAULT NULL,
+    `double_test` DOUBLE(10,3) DEFAULT NULL,
+    `decimal_test` DECIMAL(10,3) DEFAULT NULL,
+    `decimal_zero_test` DECIMAL(10,3) DEFAULT NULL,
+    `date_test` DATE DEFAULT NULL,
+    `date_time_test` DATETIME DEFAULT NULL,
+    `date_time_with_precision_test` DATETIME(3) DEFAULT NULL,
+    `time_with_precision_test` TIME(3) DEFAULT NULL,
+    `timestamp_test` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `time_test` TIME DEFAULT NULL,
+    `year_test` YEAR(4) DEFAULT NULL,
+    `char_test` CHAR(10) DEFAULT NULL,
+    `varchar_test` VARCHAR(10) DEFAULT NULL,
+    `binary_test` BINARY(10) DEFAULT NULL,
+    `varbinary_test` VARBINARY(10) DEFAULT NULL,
+    `tiny_blob_test` TINYBLOB,
+    `tiny_text_test` TINYTEXT,
+    `blob_test` BLOB,
+    `text_test` TEXT,
+    `medium_blob_test` MEDIUMBLOB,
+    `medium_text_test` MEDIUMTEXT,
+    `long_blob_test` LONGBLOB,
+    `long_text_test` LONGTEXT,
+    `enum_test` ENUM('val1','val2') DEFAULT NULL,
+    `set_test` SET('val1','val2') DEFAULT NULL,
+    PRIMARY KEY (`id`)
+  ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+SQL
 
-Benchmark.ips do |bm|
-  bm.report("nocturne") do
-    n.query("SELECT * FROM users")
+n.query(<<-SQL)
+  INSERT INTO `nocturne_test` (
+    bit_test, single_bit_test, tiny_int_test, bool_cast_test, small_int_test,
+    medium_int_test, int_test, big_int_test, unsigned_big_int_test,
+    float_test, float_zero_test, double_test, decimal_test, decimal_zero_test
+  ) VALUES (
+    12345, 1, 12, 1, 123,
+    1234, 1234, 1234567, 1324,
+    '1.2', '1.0', '1.23', '1.2', '1.0'
+  )
+SQL
+
+case ARGV[0]
+when "stackprof"
+  require "stackprof"
+  StackProf.run(mode: :cpu, out: "./tmp/stackprof-query") do
+    50000.times do
+      n.query("SELECT * from nocturne_test")
+    end
   end
+when "strings"
+  require "objspace"
+  GC.start
+  GC.disable
 
-  bm.report("trilogy") do
-    t.query("SELECT * FROM users")
+  strings_before = ObjectSpace.each_object(String).to_a
+
+  n.query("SELECT * FROM nocturne_test")
+
+  strings = ObjectSpace.each_object(String).to_a - strings_before
+  strings.sort.each { p _1 }
+  p strings.count
+when "objects"
+  require "objspace"
+  GC.start
+  GC.disable
+
+  before = ObjectSpace.count_objects
+
+  3.times do
+    n.query("SELECT * FROM nocturne_test")
+    diff = ObjectSpace.count_objects.map { |k, v| [k, v - before[k]] }
+    p diff.to_h
   end
+else
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.query("SELECT * FROM nocturne_test")
+    end
 
-  bm.compare!
+    bm.report("nocturne") do
+      n.query("SELECT * FROM nocturne_test")
+    end
+
+    bm.compare!
+  end
 end
-
-# require 'stackprof'
-# StackProf.run(mode: :cpu, out: "./tmp/stackprof-query") do
-#   50000.times do
-#     n.query("SELECT * from users")
-#   end
-# end
 
 n.close
 t.close

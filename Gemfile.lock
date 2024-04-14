@@ -2,11 +2,13 @@ PATH
   remote: .
   specs:
     nocturne (0.0.1)
+      bigdecimal
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
+    bigdecimal (3.1.7)
     json (2.7.2)
     language_server-protocol (3.17.0.3)
     lint_roller (1.1.0)

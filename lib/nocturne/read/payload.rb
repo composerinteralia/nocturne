@@ -6,6 +6,10 @@ class Nocturne
         @pos = 0
       end
 
+      def skip(n)
+        @pos += n
+      end
+
       def int(bytes = 1)
         result = 0
 

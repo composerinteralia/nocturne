@@ -45,11 +45,11 @@ class Nocturne
 
         column_count.times do
           @sock.read_packet do |column|
-            column.lenenc_str
-            column.lenenc_str
-            column.lenenc_str
-            column.lenenc_str
-            column.lenenc_str
+            column.skip(column.lenenc_int)
+            column.skip(column.lenenc_int)
+            column.skip(column.lenenc_int)
+            column.skip(column.lenenc_int)
+            column.skip(column.lenenc_int)
             name = column.lenenc_str
             column.lenenc_int
             charset = column.int(2)
@@ -107,6 +107,7 @@ class Nocturne
 
       def cast_value(row, column)
         return if row.nil?
+        # return row.lenenc_str if casting is disabled
 
         # TODO: try to write these without all the extra strings
         case column.type
