@@ -40,17 +40,15 @@ class Nocturne
       end
 
       def lenenc_str
-        len = lenenc_int
-        @payload[@pos, len].tap { @pos += len }
+        strn(lenenc_int)
       end
 
-      def nil?
-        if @payload.getbyte(@pos) == 0xFB
-          @pos += 1
-          true
-        else
-          false
-        end
+      def strn(n)
+        @payload[@pos, n].tap { @pos += n }
+      end
+
+      def eof_str
+        strn(@payload.length - @pos)
       end
 
       def nulstr
@@ -60,20 +58,15 @@ class Nocturne
           @pos += 1
         end
 
-        @payload[start...@pos].tap do
+        @payload[start...@pos].tap { @pos += 1 }
+      end
+
+      def nil?
+        if @payload.getbyte(@pos) == 0xFB
           @pos += 1
-        end
-      end
-
-      def strn(n)
-        @payload[@pos, n].tap do
-          @pos += n
-        end
-      end
-
-      def eof_str
-        @payload[@pos...].tap do
-          @pos = @payload.length
+          true
+        else
+          false
         end
       end
 
