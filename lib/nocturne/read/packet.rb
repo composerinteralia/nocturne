@@ -6,7 +6,7 @@ class Nocturne
       def initialize
         @state = 0
         @payload_bytes_read = 0
-        @payload = []
+        @fragments = []
         @payload_len = nil
         @sequence = nil
       end
@@ -33,7 +33,7 @@ class Nocturne
             @sequence = fragment.getbyte(i)
           else
             payload_fragment = fragment[i, @payload_len - @payload_bytes_read]
-            @payload << payload_fragment
+            @fragments << payload_fragment
             @payload_bytes_read += payload_fragment.length
             i += payload_fragment.length
             break
@@ -57,7 +57,11 @@ class Nocturne
       end
 
       def payload
-        Read::Payload.new(@payload.length == 1 ? @payload.first : @payload.join)
+        # TODO: do we actually need to join the fragments together at all?
+        # Maybe rewrite the payload class to be able to read directly from the
+        # fragments instead. Or maybe read the fragments lazily as needed (that
+        # might make it easier to do the continuation stuff too).
+        Read::Payload.new(@fragments, @payload_len)
       end
     end
   end
