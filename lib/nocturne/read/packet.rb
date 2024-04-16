@@ -4,9 +4,14 @@ class Nocturne
       attr_reader :sequence
 
       def initialize
+        @payload = Read::Payload.new
+        reset
+      end
+
+      def reset
         @state = 0
         @payload_bytes_read = 0
-        @payload = []
+        @fragments = []
         @payload_len = nil
         @sequence = nil
       end
@@ -33,7 +38,7 @@ class Nocturne
             @sequence = fragment.getbyte(i)
           else
             payload_fragment = fragment[i, @payload_len - @payload_bytes_read]
-            @payload << payload_fragment
+            @fragments << payload_fragment
             @payload_bytes_read += payload_fragment.length
             i += payload_fragment.length
             break
@@ -57,7 +62,8 @@ class Nocturne
       end
 
       def payload
-        Read::Payload.new(@payload.length == 1 ? @payload.first : @payload.join)
+        @payload.fragments = @fragments
+        @payload
       end
     end
   end

@@ -3,10 +3,23 @@ class Nocturne
     class Packet
       LENGTH_PLACEHOLDER = "   ".b
 
-      def initialize(buffer, sequence, &blk)
-        @buffer = buffer
+      def initialize
+        @buffer = "".b
+      end
+
+      def build(sequence)
         @buffer << LENGTH_PLACEHOLDER
         @buffer << sequence
+        yield self
+      end
+
+      def reset
+        @buffer.clear
+        @length_written = false
+      end
+
+      def empty?
+        @buffer.empty?
       end
 
       def int(bytes, value)

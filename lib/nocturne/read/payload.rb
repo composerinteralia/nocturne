@@ -1,8 +1,12 @@
 class Nocturne
   module Read
     class Payload
-      def initialize(payload)
-        @payload = payload
+      def initialize
+        @pos = 0
+      end
+
+      def fragments=(fragments)
+        @payload = fragments.length == 1 ? fragments.first : fragments.join
         @pos = 0
       end
 

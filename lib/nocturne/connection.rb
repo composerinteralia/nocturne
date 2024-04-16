@@ -4,7 +4,8 @@ class Nocturne
   class Connection
     def initialize(sock)
       @sock = sock
-      @write_buffer = "".b
+      @write = Write::Packet.new
+      @read = Read::Packet.new
       @read_buffer = "".b
       @read_pos = 0
       @next_sequence = 0
@@ -12,24 +13,24 @@ class Nocturne
 
     def begin_command
       raise "unread data" unless buffer_fully_read?
-      raise "unwritten data" unless @write_buffer.empty?
+      raise "unwritten data" unless @write.empty?
       @next_sequence = 0
     end
 
     def write_packet(&blk)
-      packet = Write::Packet.new(@write_buffer, @next_sequence).tap(&blk)
+      @write.build(@next_sequence, &blk)
 
       written = 0
-      while written < packet.length
-        written += @sock.sendmsg(packet.data(written))
+      while written < @write.length
+        written += @sock.sendmsg(@write.data(written))
       end
 
-      @write_buffer.clear
       @next_sequence += 1
+      @write.reset
     end
 
     def read_packet
-      packet = Read::Packet.new
+      @read.reset
 
       loop do
         if buffer_fully_read?
@@ -37,14 +38,14 @@ class Nocturne
           @read_pos = 0
         end
 
-        @read_pos += packet.parse_fragment(@read_buffer, @read_pos)
+        @read_pos += @read.parse_fragment(@read_buffer, @read_pos)
 
-        if packet.complete?
-          raise "sequence out of order" if packet.sequence != @next_sequence
-          @next_sequence = packet.sequence + 1
+        if @read.complete?
+          raise "sequence out of order" if @read.sequence != @next_sequence
+          @next_sequence = @read.sequence + 1
 
           # TODO: If packet continues, maybe wrap them all up into a grouped thing?
-          yield packet.payload if block_given?
+          yield @read.payload if block_given?
           return
         end
       end
