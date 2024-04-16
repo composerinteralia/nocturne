@@ -10,17 +10,27 @@ class Nocturne
     MAX_BYTES = 32768
 
     def recv(buffer)
-      @sock.recv_nonblock(MAX_BYTES, 0, buffer)
-    rescue IO::WaitReadable
-      IO.select([@sock])
-      retry
+      loop do
+        result = @sock.recv_nonblock(MAX_BYTES, 0, buffer, exception: false)
+
+        if :wait_readable == result
+          IO.select([@sock])
+        else
+          return result
+        end
+      end
     end
 
     def sendmsg(data)
-      @sock.sendmsg_nonblock(data)
-    rescue IO::WaitWritable
-      IO.select(nil, [@sock])
-      retry
+      loop do
+        result = @sock.sendmsg_nonblock(data, exception: false)
+
+        if :wait_writable == result
+          IO.select(nil, [@sock])
+        else
+          return result
+        end
+      end
     end
 
     def close
