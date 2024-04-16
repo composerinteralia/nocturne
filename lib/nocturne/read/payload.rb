@@ -20,41 +20,41 @@ class Nocturne
         i = @pos
         @pos += 2
 
-        @payload.getbyte(i) << 8 |
-          @payload.getbyte(i + 1)
+        @payload.getbyte(i) |
+          @payload.getbyte(i + 1) << 8
       end
 
       def int24
         i = @pos
         @pos += 3
 
-        @payload.getbyte(i) << 16 |
+        @payload.getbyte(i) |
           @payload.getbyte(i + 1) << 8 |
-          @payload.getbyte(i + 2)
+          @payload.getbyte(i + 2) << 16
       end
 
       def int32
         i = @pos
         @pos += 4
 
-        @payload.getbyte(i) << 24 |
-          @payload.getbyte(i + 1) << 16 |
-          @payload.getbyte(i + 2) << 8 |
-          @payload.getbyte(i + 3)
+        @payload.getbyte(i) |
+          @payload.getbyte(i + 1) << 8 |
+          @payload.getbyte(i + 2) << 16 |
+          @payload.getbyte(i + 3) << 24
       end
 
       def int64
         i = @pos
         @pos += 8
 
-        @payload.getbyte(i) << 56 |
-          @payload.getbyte(i + 1) << 48 |
-          @payload.getbyte(i + 2) << 40 |
-          @payload.getbyte(i + 3) << 32 |
-          @payload.getbyte(i + 4) << 24 |
-          @payload.getbyte(i + 5) << 16 |
-          @payload.getbyte(i + 6) << 8 |
-          @payload.getbyte(i + 7)
+        @payload.getbyte(i) |
+          @payload.getbyte(i + 1) << 8 |
+          @payload.getbyte(i + 2) << 16 |
+          @payload.getbyte(i + 3) << 24 |
+          @payload.getbyte(i + 4) << 32 |
+          @payload.getbyte(i + 5) << 40 |
+          @payload.getbyte(i + 6) << 48 |
+          @payload.getbyte(i + 7) << 56
       end
 
       def lenenc_int
