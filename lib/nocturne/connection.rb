@@ -32,23 +32,20 @@ class Nocturne
     def read_packet
       @read.reset
 
-      loop do
+      until @read.complete?
         if buffer_fully_read?
           @sock.recv(@read_buffer)
           @read_pos = 0
         end
 
         @read_pos += @read.parse_fragment(@read_buffer, @read_pos)
-
-        if @read.complete?
-          raise "sequence out of order" if @read.sequence != @next_sequence
-          @next_sequence = @read.sequence + 1
-
-          # TODO: If packet continues, maybe wrap them all up into a grouped thing?
-          yield @read.payload if block_given?
-          return
-        end
       end
+
+      raise "sequence out of order" if @read.sequence != @next_sequence
+      @next_sequence = @read.sequence + 1
+
+      # TODO: If packet continues, maybe wrap them all up into a grouped thing?
+      yield @read.payload if block_given?
     end
 
     private
