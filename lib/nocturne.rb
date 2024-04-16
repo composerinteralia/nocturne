@@ -2,6 +2,7 @@
 
 require "socket"
 require "digest"
+require_relative "nocturne/connection"
 require_relative "nocturne/error"
 require_relative "nocturne/protocol"
 require_relative "nocturne/protocol/handshake"
@@ -30,21 +31,22 @@ class Nocturne
   def initialize(options = {})
     @options = options
     @sock = Nocturne::Socket.new(options)
+    @conn = Nocturne::Connection.new(@sock)
 
-    handshake = Protocol::Handshake.new(@sock, @options).tap(&:engage)
+    handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
     @server_version = handshake.server_version
     @query_flags = 0
   end
 
   def change_db(db)
-    @sock.begin_command
+    @conn.begin_command
 
-    @sock.write_packet do |packet|
+    @conn.write_packet do |packet|
       packet.int(1, COM_INIT_DB)
       packet.str(db)
     end
 
-    @sock.read_packet do |payload|
+    @conn.read_packet do |payload|
       raise Protocol.error(payload, Error) if payload.err?
     end
   end
@@ -52,25 +54,25 @@ class Nocturne
   alias_method :select_db, :change_db
 
   def query(sql)
-    Protocol::Query.new(@sock, @options, @query_flags).query(sql)
+    Protocol::Query.new(@conn, @options, @query_flags).query(sql)
   end
 
   def ping
-    @sock.begin_command
+    @conn.begin_command
 
-    @sock.write_packet do |packet|
+    @conn.write_packet do |packet|
       packet.int(1, COM_PING)
     end
 
-    @sock.read_packet do |payload|
+    @conn.read_packet do |payload|
       raise Protocol.error(payload, Error) if payload.err?
     end
   end
 
   def close
-    @sock.begin_command
+    @conn.begin_command
 
-    @sock.write_packet do |packet|
+    @conn.write_packet do |packet|
       packet.int(1, COM_QUIT)
     end
 

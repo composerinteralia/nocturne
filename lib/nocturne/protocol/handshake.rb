@@ -5,8 +5,8 @@ class Nocturne
     class Handshake
       attr_reader :server_version
 
-      def initialize(sock, options)
-        @sock = sock
+      def initialize(conn, options)
+        @conn = conn
         @options = options
       end
 
@@ -14,7 +14,7 @@ class Nocturne
         server_handshake
         client_handshake
 
-        @sock.read_packet do |packet|
+        @conn.read_packet do |packet|
           if packet.ok?
             return
           elsif packet.err?
@@ -30,7 +30,7 @@ class Nocturne
       end
 
       def server_handshake
-        @sock.read_packet do |handshake|
+        @conn.read_packet do |handshake|
           _protocol_version = handshake.int8
           @server_version = handshake.nulstr
           _thread_id = handshake.int32
@@ -48,7 +48,7 @@ class Nocturne
       end
 
       def client_handshake
-        @sock.write_packet do |packet|
+        @conn.write_packet do |packet|
           # TODO don't hardcode all this
           packet.int(4, 0x018aa200) # capabilities
           packet.int(4, 0xffffff) # max packet size
@@ -70,7 +70,7 @@ class Nocturne
       private
 
       def auth_switch(plugin, data)
-        @sock.write_packet do |packet|
+        @conn.write_packet do |packet|
           case plugin
           when "mysql_native_password"
             packet.str(mysql_native_password(data)) if password?
@@ -82,7 +82,7 @@ class Nocturne
           end
         end
 
-        @sock.read_packet do |payload|
+        @conn.read_packet do |payload|
           raise Protocol.error(payload, ConnectionError) if payload.err?
         end
       end

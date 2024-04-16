@@ -5,22 +5,22 @@ require "bigdecimal"
 class Nocturne
   module Protocol
     class Query
-      def initialize(sock, options, flags)
-        @sock = sock
+      def initialize(conn, options, flags)
+        @conn = conn
         @options = options
         @flags = flags
       end
 
       def query(sql)
-        @sock.begin_command
+        @conn.begin_command
 
-        @sock.write_packet do |packet|
+        @conn.write_packet do |packet|
           packet.int(1, COM_QUERY)
           packet.str(sql)
         end
 
         column_count = 0
-        @sock.read_packet do |payload|
+        @conn.read_packet do |payload|
           if payload.ok?
             # Done. No results.
           elsif payload.err?
@@ -42,7 +42,7 @@ class Nocturne
         columns = []
 
         column_count.times do
-          @sock.read_packet do |column|
+          @conn.read_packet do |column|
             column.skip(column.lenenc_int)
             column.skip(column.lenenc_int)
             column.skip(column.lenenc_int)
@@ -70,7 +70,7 @@ class Nocturne
 
         more_rows = true
         while more_rows
-          @sock.read_packet do |row|
+          @conn.read_packet do |row|
             if row.eof?
               more_rows = false
               break
