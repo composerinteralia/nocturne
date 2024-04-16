@@ -41,7 +41,8 @@ class Nocturne
       def read_columns(column_count)
         columns = []
 
-        column_count.times do
+        i = 0
+        while i < column_count
           @conn.read_packet do |column|
             column.skip(column.lenenc_int)
             column.skip(column.lenenc_int)
@@ -58,6 +59,8 @@ class Nocturne
 
             columns << [name, charset, len, type, flags, decimals]
           end
+
+          i += 1
         end
 
         columns
