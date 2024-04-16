@@ -70,7 +70,7 @@ case ARGV[0]
 when "stackprof"
   require "stackprof"
   StackProf.run(mode: :wall, out: "./tmp/stackprof-query") do
-    10000.times do
+    50000.times do
       n.query("SELECT * from nocturne_test")
     end
   end
