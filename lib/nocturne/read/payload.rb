@@ -62,20 +62,19 @@ class Nocturne
       end
 
       def lenenc_int
-        case @payload.getbyte(@pos)
-        when 0xFC
-          @pos += 1
+        byte = @payload.getbyte(@pos)
+        @pos += 1
+
+        if byte < 0xFC
+          byte
+        elsif byte == 0xFC
           int16
-        when 0xFD
-          @pos += 1
+        elsif byte == 0xFD
           int24
-        when 0xFE
-          @pos += 1
+        elsif byte == 0xFD
           int64
-        when 0xFF
-          raise "unexpected int"
         else
-          int8
+          raise "unexpected int"
         end
       end
 
