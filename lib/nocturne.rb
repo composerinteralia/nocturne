@@ -4,7 +4,7 @@ require "socket"
 require "digest"
 require_relative "nocturne/error"
 require_relative "nocturne/protocol"
-require_relative "nocturne/protocol/connection"
+require_relative "nocturne/protocol/handshake"
 require_relative "nocturne/protocol/query"
 require_relative "nocturne/read/packet"
 require_relative "nocturne/read/payload"
@@ -31,8 +31,8 @@ class Nocturne
     @options = options
     @sock = Nocturne::Socket.new(options)
 
-    connection = Protocol::Connection.new(@sock, @options).tap(&:establish)
-    @server_version = connection.server_version
+    handshake = Protocol::Handshake.new(@sock, @options).tap(&:engage)
+    @server_version = handshake.server_version
     @query_flags = 0
   end
 

@@ -2,7 +2,7 @@
 
 class Nocturne
   module Protocol
-    class Connection
+    class Handshake
       attr_reader :server_version
 
       def initialize(sock, options)
@@ -10,7 +10,7 @@ class Nocturne
         @options = options
       end
 
-      def establish
+      def engage
         server_handshake
         client_handshake
 
