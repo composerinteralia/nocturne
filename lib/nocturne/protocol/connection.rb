@@ -19,7 +19,7 @@ class Nocturne
             return
           elsif packet.err?
             raise Protocol.error(payload, ConnectionError)
-          elsif packet.int == 0xFE # auth switch
+          elsif packet.int8 == 0xFE # auth switch
             plugin = packet.nulstr
             data = packet.eof_str
             auth_switch(plugin, data)
@@ -31,16 +31,16 @@ class Nocturne
 
       def server_handshake
         @sock.read_packet do |handshake|
-          _protocol_version = handshake.int
+          _protocol_version = handshake.int8
           @server_version = handshake.nulstr
-          _thread_id = handshake.int(4)
+          _thread_id = handshake.int32
           auth_plugin_data = handshake.strn(8)
           handshake.skip(1)
-          _capabilities = handshake.int(2)
-          _character_set = handshake.int
-          _status_flags = handshake.int(2)
-          _capabilities2 = handshake.int(2)
-          auth_plugin_data_len = handshake.int
+          _capabilities = handshake.int16
+          _character_set = handshake.int8
+          _status_flags = handshake.int16
+          _capabilities2 = handshake.int16
+          auth_plugin_data_len = handshake.int8
           handshake.skip(10)
           @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max)
           @auth_plugin_name = handshake.nulstr

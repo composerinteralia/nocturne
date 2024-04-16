@@ -8,8 +8,8 @@ class Nocturne
     end
 
     def self.read_error(packet)
-      packet.int
-      code = packet.int(2)
+      packet.int8
+      code = packet.int16
       packet.strn(1)
       packet.strn(5)
       message = packet.eof_str

@@ -10,9 +10,10 @@ class Nocturne
       end
 
       def int(bytes, value)
-        bytes.times do
+        while bytes > 0
           @buffer << (value & 0xff)
           value >>= 8
+          bytes -= 1
         end
       end
 
@@ -42,12 +43,12 @@ class Nocturne
       private
 
       def write_length
-        3.times do |i|
-          byte = ((@buffer.length - 4) >> i * 8) & 0xFF
-          @buffer[i] = byte.chr
-        end
+        payload_length = @buffer.length - 4
+        @buffer[0] = (payload_length & 0xff).chr
+        @buffer[1] = ((payload_length >> 8) & 0xff).chr
+        @buffer[2] = ((payload_length >> 16) & 0xff).chr
 
-        @length_written
+        @length_written = true
       end
     end
   end

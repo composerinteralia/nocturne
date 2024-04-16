@@ -50,11 +50,11 @@ class Nocturne
             column.skip(column.lenenc_int)
             name = column.lenenc_str
             column.lenenc_int
-            charset = column.int(2)
-            len = column.int(4)
-            type = column.int(1)
-            flags = column.int(2)
-            decimals = column.int(1)
+            charset = column.int16
+            len = column.int32
+            type = column.int8
+            flags = column.int16
+            decimals = column.int8
 
             columns << [name, charset, len, type, flags, decimals]
           end
@@ -107,7 +107,7 @@ class Nocturne
         return if row.nil?
         # return row.lenenc_str #if casting is disabled
 
-        name, charset, len, type, flags, decimals = column
+        _name, _charset, len, type, _flags, decimals = column
 
         # TODO: maybe try to write these without all the extra strings, although
         # casting is not the slowest thing here
@@ -115,7 +115,7 @@ class Nocturne
         when BIT
           if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
-            row.int.zero? ? false : true
+            row.int8.zero? ? false : true
           else
             row.lenenc_str
           end
