@@ -4,6 +4,7 @@ class Nocturne
   class Socket
     def initialize(options)
       @sock = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM)
+      @select_sock = [@sock]
       @sock.connect ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || "localhost")
     end
 
@@ -14,7 +15,7 @@ class Nocturne
         result = @sock.recv_nonblock(MAX_BYTES, 0, buffer, exception: false)
 
         if :wait_readable == result
-          IO.select([@sock])
+          IO.select(@select_sock)
         else
           return result
         end
@@ -26,7 +27,7 @@ class Nocturne
         result = @sock.sendmsg_nonblock(data, exception: false)
 
         if :wait_writable == result
-          IO.select(nil, [@sock])
+          IO.select(nil, @select_sock)
         else
           return result
         end
