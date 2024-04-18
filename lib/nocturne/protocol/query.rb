@@ -103,7 +103,15 @@ class Nocturne
       NEWDECIMAL = 0xf6
 
       def read_row(column_count, row)
-        column_count.times.map { |i| cast_value(row, @columns[i]) }
+        result = []
+        i = 0
+
+        while column_count < i
+          result << cast_value(row, @columns[i])
+          i += 1
+        end
+
+        result
       end
 
       def cast_value(row, column)
