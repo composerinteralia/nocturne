@@ -40,7 +40,7 @@ class Nocturne
             @sequence = fragment.getbyte(i)
           else
             payload_fragment_length = [@payload_len, length - (4 - inititial_state)].min - @payload_bytes_read
-            @fragments << fragment[i, @payload_len - @payload_bytes_read]
+            @fragments << fragment[i, payload_fragment_length]
             @payload_bytes_read += payload_fragment_length
             i += payload_fragment_length
             break
