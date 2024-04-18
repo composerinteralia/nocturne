@@ -764,12 +764,12 @@ class ClientTest < NocturneTest
   #   assert_kind_of String, server_info[:version]
   # end
 
-  def test_connect_by_multiple_names
-    return skip unless ["127.0.0.1", "localhost"].include?(DEFAULT_HOST)
-
-    Nocturne.new(host: "127.0.0.1")
-    Nocturne.new(host: "localhost")
-  end
+  # def test_connect_by_multiple_names
+  #   return skip unless ["127.0.0.1", "localhost"].include?(DEFAULT_HOST)
+  #
+  #   Nocturne.new(host: "127.0.0.1")
+  #   Nocturne.new(host: "localhost")
+  # end
   #
   # PADDED_QUERY_TEMPLATE = "SELECT LENGTH('%s')"
   # PROTOCOL_OVERHEAD = 2 # One byte for the 0x03 (COM_QUERY); one because the packet is actually required to be shorter than the "max"

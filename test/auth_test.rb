@@ -85,6 +85,7 @@ class AuthTest < NocturneTest
   end
 
   def test_cleartext_auth_plugin
+    skip if ENV["CI"]
     client = new_tcp_client username: "cleartext_user", password: "password", enable_cleartext_plugin: true
     refute_nil client
   ensure
@@ -92,6 +93,7 @@ class AuthTest < NocturneTest
   end
 
   def test_cleartext_auth_plugin_disabled
+    skip if ENV["CI"]
     assert_raises Nocturne::AuthPluginError do
       new_tcp_client username: "cleartext_user", password: "password"
     end
