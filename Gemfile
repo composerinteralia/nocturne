@@ -7,3 +7,9 @@ gemspec
 gem "rake"
 gem "standard"
 gem "minitest"
+
+group :benchmark do
+  gem "benchmark-ips"
+  gem "stackprof"
+  gem "trilogy"
+end

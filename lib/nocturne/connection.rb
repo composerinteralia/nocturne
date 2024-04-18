@@ -21,6 +21,7 @@ class Nocturne
     def write_packet(&blk)
       @write.build(@next_sequence, &blk)
 
+      # TODO: writing packets longer than 0xFFFFFF
       written = 0
       write_len = @write.length
       while written < write_len
@@ -34,20 +35,25 @@ class Nocturne
     def read_packet
       @read.reset
 
-      until @read.complete?
-        if buffer_fully_read?
-          @sock.recv(@read_buffer)
-          @read_len = @read_buffer.length
-          @read_pos = 0
+      loop do
+        @read.new_packet
+
+        until @read.complete?
+          if buffer_fully_read?
+            @sock.recv(@read_buffer)
+            @read_len = @read_buffer.length
+            @read_pos = 0
+          end
+
+          @read_pos += @read.parse_fragment(@read_buffer, @read_len, @read_pos)
         end
 
-        @read_pos += @read.parse_fragment(@read_buffer, @read_len, @read_pos)
+        raise "sequence out of order" if @read.sequence != @next_sequence
+        @next_sequence = @read.sequence + 1
+
+        break unless @read.continues?
       end
 
-      raise "sequence out of order" if @read.sequence != @next_sequence
-      @next_sequence = @read.sequence + 1
-
-      # TODO: If packet continues, maybe wrap them all up into a grouped thing?
       yield @read.payload if block_given?
     end
 

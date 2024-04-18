@@ -10,8 +10,11 @@ class Nocturne
       end
 
       def reset
-        @state = 0
         @fragments.clear
+      end
+
+      def new_packet
+        @state = 0
         @payload_bytes_read = 0
         @payload_len = nil
         @sequence = nil
@@ -26,7 +29,7 @@ class Nocturne
       # we left off.
       def parse_fragment(fragment, length, offset)
         i = offset
-        inititial_state = @state
+        initial_state = @state
 
         while i < length
           case @state
@@ -39,7 +42,7 @@ class Nocturne
           when 3
             @sequence = fragment.getbyte(i)
           else
-            payload_fragment_length = [@payload_len, length - (4 - inititial_state)].min - @payload_bytes_read
+            payload_fragment_length = [@payload_len - @payload_bytes_read, length - offset - (4 - initial_state)].min
             @fragments << fragment[i, payload_fragment_length]
             @payload_bytes_read += payload_fragment_length
             i += payload_fragment_length

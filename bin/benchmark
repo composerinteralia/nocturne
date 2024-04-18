@@ -1,12 +1,6 @@
 #!/usr/bin/env ruby
 
 require_relative "../lib/nocturne"
-require 'trilogy'
-require 'benchmark/ips'
-require 'stackprof'
-
-t = Trilogy.new(host: "127.0.0.1")
-t.change_db("trilogy_test")
 
 n = Nocturne.new
 n.change_db("trilogy_test")
@@ -103,6 +97,12 @@ when "objects"
     p diff.to_h
   end
 else
+  require 'trilogy'
+  require 'benchmark/ips'
+
+  t = Trilogy.new(host: "127.0.0.1")
+  t.change_db("trilogy_test")
+
   Benchmark.ips do |bm|
     bm.report("trilogy") do
       t.query("SELECT * FROM nocturne_test")
@@ -114,7 +114,8 @@ else
 
     bm.compare!
   end
+
+  t.close
 end
 
 n.close
-t.close
