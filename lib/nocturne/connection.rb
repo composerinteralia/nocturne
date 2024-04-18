@@ -8,6 +8,7 @@ class Nocturne
       @read = Read::Packet.new
       @read_buffer = "".b
       @read_pos = 0
+      @read_len = 0
       @next_sequence = 0
     end
 
@@ -21,7 +22,8 @@ class Nocturne
       @write.build(@next_sequence, &blk)
 
       written = 0
-      while written < @write.length
+      write_len = @write.length
+      while written < write_len
         written += @sock.sendmsg(@write.data(written))
       end
 
@@ -35,10 +37,11 @@ class Nocturne
       until @read.complete?
         if buffer_fully_read?
           @sock.recv(@read_buffer)
+          @read_len = @read_buffer.length
           @read_pos = 0
         end
 
-        @read_pos += @read.parse_fragment(@read_buffer, @read_pos)
+        @read_pos += @read.parse_fragment(@read_buffer, @read_len, @read_pos)
       end
 
       raise "sequence out of order" if @read.sequence != @next_sequence
@@ -51,7 +54,7 @@ class Nocturne
     private
 
     def buffer_fully_read?
-      @read_buffer.length == @read_pos
+      @read_len == @read_pos
     end
   end
 end

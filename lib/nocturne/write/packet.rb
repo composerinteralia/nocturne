@@ -3,19 +3,23 @@ class Nocturne
     class Packet
       LENGTH_PLACEHOLDER = "   ".b
 
+      attr_reader :length
+
       def initialize
         @buffer = "".b
+        @length = 0
       end
 
       def build(sequence)
         @buffer << LENGTH_PLACEHOLDER
         @buffer << sequence
         yield self
+        write_length
       end
 
       def reset
         @buffer.clear
-        @length_written = false
+        @length = 0
       end
 
       def empty?
@@ -39,13 +43,7 @@ class Nocturne
         @buffer << 0
       end
 
-      def length
-        data.length
-      end
-
       def data(offset = 0)
-        write_length unless @length_written
-
         if offset.zero?
           @buffer
         else
@@ -56,12 +54,12 @@ class Nocturne
       private
 
       def write_length
-        payload_length = @buffer.length - 4
+        payload_length = @length = @buffer.length
+        payload_length -= 4
+
         @buffer[0] = (payload_length & 0xff).chr
         @buffer[1] = ((payload_length >> 8) & 0xff).chr
         @buffer[2] = ((payload_length >> 16) & 0xff).chr
-
-        @length_written = true
       end
     end
   end

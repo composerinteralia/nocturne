@@ -24,11 +24,11 @@ class Nocturne
       # We won't necessarily read all the bytes for a packet at once, so we need
       # to be able to call this method with the next fragment(s) and pick up where
       # we left off.
-      def parse_fragment(fragment, offset)
+      def parse_fragment(fragment, length, offset)
         i = offset
-        finish = fragment.length
+        inititial_state = @state
 
-        while i < finish
+        while i < length
           case @state
           when 0
             @payload_len = fragment.getbyte(i)
@@ -39,11 +39,10 @@ class Nocturne
           when 3
             @sequence = fragment.getbyte(i)
           else
-            payload_fragment = fragment[i, @payload_len - @payload_bytes_read]
-            @fragments << payload_fragment
-            length = payload_fragment.length
-            @payload_bytes_read += length
-            i += length
+            payload_fragment_length = [@payload_len, length - (4 - inititial_state)].min - @payload_bytes_read
+            @fragments << fragment[i, @payload_len - @payload_bytes_read]
+            @payload_bytes_read += payload_fragment_length
+            i += payload_fragment_length
             break
           end
 

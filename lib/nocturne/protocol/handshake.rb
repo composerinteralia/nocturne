@@ -18,7 +18,7 @@ class Nocturne
           if packet.ok?
             return
           elsif packet.err?
-            raise Protocol.error(payload, ConnectionError)
+            raise Protocol.error(packet, ConnectionError)
           elsif packet.int8 == 0xFE # auth switch
             plugin = packet.nulstr
             data = packet.eof_str
