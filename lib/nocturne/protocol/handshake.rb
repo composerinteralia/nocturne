@@ -16,7 +16,7 @@ class Nocturne
 
         @conn.read_packet do |packet|
           if packet.ok?
-            return
+            return true
           elsif packet.err?
             raise Protocol.error(packet, ConnectionError)
           elsif packet.int8 == 0xFE # auth switch

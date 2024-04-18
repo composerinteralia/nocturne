@@ -6,7 +6,7 @@ class Nocturne
       end
 
       def fragments=(fragments)
-        @payload = fragments.length == 1 ? fragments.first : fragments.join
+        @payload = (fragments.length == 1) ? fragments.first : fragments.join
         @pos = 0
       end
 
@@ -71,7 +71,7 @@ class Nocturne
           int16
         elsif byte == 0xFD
           int24
-        elsif byte == 0xFD
+        elsif byte == 0xFE
           int64
         else
           raise "unexpected int"

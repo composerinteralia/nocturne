@@ -1,4 +1,4 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
 
 require "bigdecimal"
 require "date"
@@ -127,14 +127,14 @@ class Nocturne
         when BIT
           if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
-            row.int8.zero? ? false : true
+            !row.int8.zero?
           else
             row.lenenc_str
           end
         when TINY
           if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
             raise "unexpected int" if row.lenenc_int != 1
-            row.strn(1) == "0" ? false : true
+            !(row.strn(1) == "0")
           else
             row.lenenc_str.to_i
           end

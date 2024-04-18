@@ -1,4 +1,4 @@
-#frozen_string_literal:true
+# frozen_string_literal:true
 
 class Nocturne
   class Socket
@@ -14,7 +14,7 @@ class Nocturne
       loop do
         result = @sock.recv_nonblock(MAX_BYTES, 0, buffer, exception: false)
 
-        if :wait_readable == result
+        if :wait_readable == result # standard:disable Style/YodaCondition
           IO.select(@select_sock)
         else
           return result
@@ -26,7 +26,7 @@ class Nocturne
       loop do
         result = @sock.sendmsg_nonblock(data, exception: false)
 
-        if :wait_writable == result
+        if :wait_writable == result # standard:disable Style/YodaCondition
           IO.select(nil, @select_sock)
         else
           return result
