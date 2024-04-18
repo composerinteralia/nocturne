@@ -106,7 +106,7 @@ class Nocturne
         result = []
         i = 0
 
-        while column_count < i
+        while i < column_count
           result << cast_value(row, @columns[i])
           i += 1
         end
