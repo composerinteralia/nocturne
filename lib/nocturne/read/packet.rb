@@ -5,12 +5,13 @@ class Nocturne
 
       def initialize
         @payload = Read::Payload.new
+        @fragments = []
         reset
       end
 
       def reset
         @state = 0
-        @fragments = []
+        @fragments.clear
         @payload_bytes_read = 0
         @payload_len = nil
         @sequence = nil
