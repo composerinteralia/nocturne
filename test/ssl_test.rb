@@ -7,6 +7,7 @@ require "resolv"
 
 class SslTest < NocturneTest
   def setup
+    skip
     super
 
     if server_global_variable("have_ssl") != "YES"

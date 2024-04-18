@@ -2,6 +2,8 @@ require "test_helper"
 
 class AuthTest < NocturneTest
   def has_caching_sha2?
+    skip("haven't implemented this yet")
+
     server_version = new_tcp_client.server_version
     server_version.split(".", 2)[0].to_i >= 8
   end

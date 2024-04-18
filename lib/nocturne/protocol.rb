@@ -4,7 +4,7 @@ class Nocturne
   module Protocol
     def self.error(packet, klass)
       code, message = read_error(packet)
-      klass.new("#{code}: #{message}")
+      klass.new("#{code}: #{message}", code)
     end
 
     def self.read_error(packet)

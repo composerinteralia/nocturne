@@ -49,8 +49,8 @@ class Nocturne
             column.skip(column.lenenc_int)
             column.skip(column.lenenc_int)
             column.skip(column.lenenc_int)
-            column.skip(column.lenenc_int)
             name = column.lenenc_str
+            column.skip(column.lenenc_int)
             column.lenenc_int
             charset = column.int16
             len = column.int32

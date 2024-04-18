@@ -2,6 +2,15 @@
 
 class Nocturne
   class Error < StandardError
+    attr_reader :error_code
+
+    def initialize(message, error_code = nil)
+      @error_code = error_code
+      super(message)
+    end
+  end
+
+  class AuthPluginError < Error
   end
 
   class ConnectionError < Error

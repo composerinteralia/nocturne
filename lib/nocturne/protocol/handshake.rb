@@ -75,10 +75,10 @@ class Nocturne
           when "mysql_native_password"
             packet.str(mysql_native_password(data)) if password?
           when "mysql_clear_password"
-            raise "cleartext plugin not enabled" unless @options[:enable_cleartext_plugin]
+            raise AuthPluginError, "cleartext plugin not enabled" unless @options[:enable_cleartext_plugin]
             packet.str(@options[:password]) if password?
           else
-            raise "unknown auth plugin"
+            raise AuthPluginError, "unknown auth plugin"
           end
         end
 

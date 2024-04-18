@@ -52,6 +52,8 @@ class Nocturne
     @conn.read_packet do |payload|
       raise Protocol.error(payload, Error) if payload.err?
     end
+
+    true
   end
 
   alias_method :select_db, :change_db
@@ -70,6 +72,8 @@ class Nocturne
     @conn.read_packet do |payload|
       raise Protocol.error(payload, Error) if payload.err?
     end
+
+    true
   end
 
   def close
