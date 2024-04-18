@@ -23,7 +23,10 @@ class Nocturne
   COM_QUERY = 3
   COM_PING = 14
 
+  QUERY_FLAGS_NONE = 0
+  QUERY_FLAGS_CAST = 1
   QUERY_FLAGS_CAST_BOOLEANS = 2
+  QUERY_FLAGS_LOCAL_TIMEZONE = 4
 
   attr_reader :server_version
   attr_accessor :query_flags
@@ -35,7 +38,7 @@ class Nocturne
 
     handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
     @server_version = handshake.server_version
-    @query_flags = 0
+    @query_flags = QUERY_FLAGS_CAST
   end
 
   def change_db(db)

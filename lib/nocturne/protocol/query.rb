@@ -1,6 +1,7 @@
 #frozen_string_literal: true
 
 require "bigdecimal"
+require "date"
 
 class Nocturne
   module Protocol
@@ -92,13 +93,13 @@ class Nocturne
       LONG = 3
       FLOAT = 4
       DOUBLE = 5
-      # TIMESTAMP = 7
+      TIMESTAMP = 7
       LONGLONG = 8
       INT24 = 9
       BIT = 0x10
-      # DATE = 0x0a
-      # TIME = 0x0b
-      # DATETIME = 0x0c
+      DATE = 0x0a
+      TIME = 0x0b
+      DATETIME = 0x0c
       YEAR = 0x0d
       NEWDECIMAL = 0xf6
 
@@ -116,7 +117,7 @@ class Nocturne
 
       def cast_value(row, column)
         return if row.nil?
-        # return row.lenenc_str #if casting is disabled
+        return row.lenenc_str if (@flags & QUERY_FLAGS_CAST).zero?
 
         _name, _charset, len, type, _flags, decimals = column
 
@@ -147,6 +148,20 @@ class Nocturne
           end
         when FLOAT, DOUBLE
           Float(row.lenenc_str)
+        when TIMESTAMP, DATETIME
+          if (@flags & QUERY_FLAGS_LOCAL_TIMEZONE).zero?
+            Time.new(row.lenenc_str, in: "UTC")
+          else
+            Time.new(row.lenenc_str)
+          end
+        when TIME
+          if (@flags & QUERY_FLAGS_LOCAL_TIMEZONE).zero?
+            Time.new("2000-01-01 " + row.lenenc_str, in: "UTC")
+          else
+            Time.new("2000-01-01 " + row.lenenc_str)
+          end
+        when DATE
+          Date.strptime(row.lenenc_str, "%Y-%m-%d")
         else
           row.lenenc_str
         end
