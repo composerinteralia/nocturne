@@ -1,9 +1,9 @@
 class Nocturne
   module Write
     class Packet
-      LENGTH_PLACEHOLDER = "   ".b
+      LENGTH_PLACEHOLDER = "    ".b
 
-      attr_reader :length
+      attr_reader :sequence
 
       def initialize
         @buffer = "".b
@@ -12,9 +12,9 @@ class Nocturne
 
       def build(sequence)
         @buffer << LENGTH_PLACEHOLDER
-        @buffer << sequence
+        @sequence = sequence
         yield self
-        write_length
+        finalize_packets
       end
 
       def reset
@@ -44,7 +44,9 @@ class Nocturne
       end
 
       def data(offset = 0)
-        if offset.zero?
+        if offset >= @length
+          nil
+        elsif offset.zero?
           @buffer
         else
           @buffer[offset..]
@@ -53,13 +55,31 @@ class Nocturne
 
       private
 
-      def write_length
-        payload_length = @length = @buffer.length
-        payload_length -= 4
+      MAX_PAYLOAD_LEN = 0xFFFFFF
 
-        @buffer[0] = (payload_length & 0xff).chr
-        @buffer[1] = ((payload_length >> 8) & 0xff).chr
-        @buffer[2] = ((payload_length >> 16) & 0xff).chr
+      def finalize_packets
+        @length = @buffer.length
+        remaining_length = @length - 4
+        packet_start = 0
+
+        write_packet_header(packet_start, remaining_length)
+
+        while remaining_length >= MAX_PAYLOAD_LEN
+          @sequence += 1
+          remaining_length -= MAX_PAYLOAD_LEN
+          packet_start += MAX_PAYLOAD_LEN + 4
+
+          @buffer.bytesplice(packet_start, 0, LENGTH_PLACEHOLDER)
+          write_packet_header(packet_start, remaining_length)
+        end
+      end
+
+      def write_packet_header(packet_start, remaining_length)
+        next_payload_length = [remaining_length, MAX_PAYLOAD_LEN].min
+        @buffer[packet_start] = (next_payload_length & 0xff).chr
+        @buffer[packet_start + 1] = ((next_payload_length >> 8) & 0xff).chr
+        @buffer[packet_start + 2] = ((next_payload_length >> 16) & 0xff).chr
+        @buffer[packet_start + 3] = @sequence.chr
       end
     end
   end

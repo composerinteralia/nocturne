@@ -21,14 +21,13 @@ class Nocturne
     def write_packet(&blk)
       @write.build(@next_sequence, &blk)
 
-      # TODO: writing packets longer than 0xFFFFFF
       written = 0
-      write_len = @write.length
-      while written < write_len
-        written += @sock.sendmsg(@write.data(written))
+      while (data = @write.data(written))
+        written += @sock.sendmsg(data)
       end
 
-      @next_sequence += 1
+      @next_sequence = @write.sequence + 1
+    ensure
       @write.reset
     end
 
