@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "socket"
 require "digest"
 require_relative "nocturne/connection"
 require_relative "nocturne/error"
@@ -33,8 +32,7 @@ class Nocturne
 
   def initialize(options = {})
     @options = options
-    @sock = Nocturne::Socket.new(options)
-    @conn = Nocturne::Connection.new(@sock)
+    @conn = Nocturne::Connection.new(options)
 
     handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
     @server_version = handshake.server_version
@@ -83,6 +81,6 @@ class Nocturne
       packet.int(1, COM_QUIT)
     end
 
-    @sock.close
+    @conn.close
   end
 end

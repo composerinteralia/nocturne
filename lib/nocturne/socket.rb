@@ -1,5 +1,7 @@
 # frozen_string_literal:true
 
+require "socket"
+
 class Nocturne
   class Socket
     def initialize(options)

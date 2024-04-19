@@ -2,8 +2,8 @@
 
 class Nocturne
   class Connection
-    def initialize(sock)
-      @sock = sock
+    def initialize(options)
+      @sock = Nocturne::Socket.new(options)
       @write = Write::Packet.new
       @read = Read::Packet.new
       @read_buffer = "".b
@@ -54,6 +54,10 @@ class Nocturne
       end
 
       yield @read.payload if block_given?
+    end
+
+    def close
+      @sock.close
     end
 
     private
