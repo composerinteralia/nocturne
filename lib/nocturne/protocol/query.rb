@@ -16,7 +16,7 @@ class Nocturne
         @conn.begin_command
 
         @conn.write_packet do |packet|
-          packet.int(1, COM_QUERY)
+          packet.int(1, Protocol::COM_QUERY)
           packet.str(sql)
         end
 

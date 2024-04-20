@@ -14,13 +14,16 @@ require_relative "nocturne/version"
 require_relative "nocturne/write/packet"
 
 class Nocturne
+  SSL_DISABLE = nil
+  SSL_VERIFY_IDENTITY = 1
+  SSL_VERIFY_CA = 2
+  SSL_REQUIRED_NOVERIFY = 3
   SSL_PREFERRED_NOVERIFY = 4
-  TLS_VERSION_12 = 3
 
-  COM_QUIT = 1
-  COM_INIT_DB = 2
-  COM_QUERY = 3
-  COM_PING = 14
+  TLS_VERSION_10 = OpenSSL::SSL::TLS1_VERSION
+  TLS_VERSION_11 = OpenSSL::SSL::TLS1_1_VERSION
+  TLS_VERSION_12 = OpenSSL::SSL::TLS1_2_VERSION
+  TLS_VERSION_13 = OpenSSL::SSL::TLS1_3_VERSION
 
   QUERY_FLAGS_NONE = 0
   QUERY_FLAGS_CAST = 1
@@ -37,13 +40,15 @@ class Nocturne
     handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
     @server_version = handshake.server_version
     @query_flags = QUERY_FLAGS_CAST
+
+    change_db(options[:database]) if options[:database]
   end
 
   def change_db(db)
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, COM_INIT_DB)
+      packet.int(1, Protocol::COM_INIT_DB)
       packet.str(db)
     end
 
@@ -64,7 +69,7 @@ class Nocturne
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, COM_PING)
+      packet.int(1, Protocol::COM_PING)
     end
 
     @conn.read_packet do |payload|
@@ -78,7 +83,7 @@ class Nocturne
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, COM_QUIT)
+      packet.int(1, Protocol::COM_QUIT)
     end
 
     @conn.close

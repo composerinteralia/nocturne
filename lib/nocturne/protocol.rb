@@ -2,6 +2,11 @@
 
 class Nocturne
   module Protocol
+    COM_QUIT = 1
+    COM_INIT_DB = 2
+    COM_QUERY = 3
+    COM_PING = 14
+
     def self.error(packet, klass)
       code, message = read_error(packet)
       klass.new("#{code}: #{message}", code)

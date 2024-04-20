@@ -56,6 +56,10 @@ class Nocturne
       yield @read.payload if block_given?
     end
 
+    def upgrade
+      @sock = @sock.ssl_sock
+    end
+
     def close
       @sock.close
     end

@@ -12,6 +12,7 @@ class Nocturne
 
       def engage
         server_handshake
+        ssl_request if @options[:ssl_mode]
         client_handshake
 
         @conn.read_packet do |packet|
@@ -47,6 +48,18 @@ class Nocturne
         end
       end
 
+      def ssl_request
+        @conn.write_packet do |packet|
+          # TODO don't hardcode all this
+          packet.int(4, 0x018aaa00) # capabilities (ssl capability set)
+          packet.int(4, 0xffffff) # max packet size
+          packet.int(1, 0x2d) # charset
+          packet.int(23, 0) # unused
+        end
+
+        @conn.upgrade
+      end
+
       def client_handshake
         @conn.write_packet do |packet|
           # TODO don't hardcode all this
@@ -54,6 +67,7 @@ class Nocturne
           packet.int(4, 0xffffff) # max packet size
           packet.int(1, 0x2d) # charset
           packet.int(23, 0) # unused
+
           packet.nulstr(@options[:username] || "root")
 
           if @auth_plugin_name == "mysql_native_password" && password?
