@@ -23,12 +23,13 @@ class ClientTest < NocturneTest
     end
   end
 
-  # def test_nocturne_connect_tcp_to_wrong_port
-  #   e = assert_raises Nocturne::ConnectionError do
-  #     new_tcp_client port: 13307
-  #   end
-  #   assert_equal "Connection refused - nocturne_connect - unable to connect to #{DEFAULT_HOST}:13307", e.message
-  # end
+  def test_nocturne_connect_tcp_to_wrong_port
+    # e = assert_raises Nocturne::ConnectionError do
+    e = assert_raises do
+      new_tcp_client port: 13307
+    end
+    assert_match "Connection refused", e.message
+  end
 
   def test_nocturne_connect_unix_socket
     return skip unless ["127.0.0.1", "localhost"].include?(DEFAULT_HOST)
@@ -45,11 +46,11 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_connect_unix_socket_string_path
-  #   assert_raises TypeError do
-  #     new_unix_client socket: :opt_boxen_data_mysql_socket
-  #   end
-  # end
+  def test_nocturne_connect_unix_socket_string_path
+    assert_raises TypeError do
+      new_unix_client socket: :opt_boxen_data_mysql_socket
+    end
+  end
 
   # def test_nocturne_connection_options
   #   client = new_tcp_client
@@ -1073,16 +1074,16 @@ class ClientTest < NocturneTest
   #   # The client is still usable after a child discarded it.
   #   assert_equal [1], client.query("SELECT 1").to_a.first
   # end
-  #
-  # def test_no_character_encoding
-  #   client = new_tcp_client
-  #
-  #   assert_equal "utf8mb4", client.query("SELECT @@character_set_client").first.first
-  #   assert_equal "utf8mb4", client.query("SELECT @@character_set_results").first.first
-  #   assert_equal "utf8mb4", client.query("SELECT @@character_set_connection").first.first
-  #   assert_equal "utf8mb4_general_ci", client.query("SELECT @@collation_connection").first.first
-  # end
-  #
+
+  def test_no_character_encoding
+    client = new_tcp_client
+
+    assert_equal "utf8mb4", client.query("SELECT @@character_set_client").first.first
+    assert_equal "utf8mb4", client.query("SELECT @@character_set_results").first.first
+    assert_equal "utf8mb4", client.query("SELECT @@character_set_connection").first.first
+    assert_equal "utf8mb4_general_ci", client.query("SELECT @@collation_connection").first.first
+  end
+
   # def test_bad_character_encoding
   #   err = assert_raises ArgumentError do
   #     new_tcp_client(encoding: "invalid")
@@ -1101,25 +1102,25 @@ class ClientTest < NocturneTest
   #   expected = "こんにちは".encode(Encoding::CP932)
   #   assert_equal expected, client.query("SELECT 'こんにちは'").to_a.first.first
   # end
-  #
-  # def test_character_encoding_handles_binary_queries
-  #   client = new_tcp_client
-  #   expected = "\xff".b
-  #
-  #   result = client.query("SELECT _binary'#{expected}'").to_a.first.first
-  #   assert_equal expected, result
-  #   assert_equal Encoding::BINARY, result.encoding
-  #
-  #   result = client.query("SELECT '#{expected}'").to_a.first.first
-  #   assert_equal expected.dup.force_encoding(Encoding::UTF_8), result
-  #   assert_equal Encoding::UTF_8, result.encoding
-  #
-  #   client = new_tcp_client(encoding: "cp932")
-  #   result = client.query("SELECT '#{expected}'").to_a.first.first
-  #   assert_equal expected.dup.force_encoding(Encoding::Windows_31J), result
-  #   assert_equal Encoding::Windows_31J, result.encoding
-  # end
-  #
+
+  def test_character_encoding_handles_binary_queries
+    client = new_tcp_client
+    expected = "\xff".b
+
+    result = client.query("SELECT _binary'#{expected}'").to_a.first.first
+    assert_equal expected, result
+    assert_equal Encoding::BINARY, result.encoding
+
+    result = client.query("SELECT '#{expected}'").to_a.first.first
+    assert_equal expected.dup.force_encoding(Encoding::UTF_8), result
+    assert_equal Encoding::UTF_8, result.encoding
+
+    # client = new_tcp_client(encoding: "cp932")
+    # result = client.query("SELECT '#{expected}'").to_a.first.first
+    # assert_equal expected.dup.force_encoding(Encoding::Windows_31J), result
+    # assert_equal Encoding::Windows_31J, result.encoding
+  end
+
   # def test_connection_options_casting
   #   options = {
   #     host: DEFAULT_HOST,

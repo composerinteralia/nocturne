@@ -580,7 +580,7 @@ class Nocturne
         when DATE
           Date.strptime(row.lenenc_str, "%Y-%m-%d")
         else
-          row.lenenc_str.encode!(ENCODING_FOR_CHARSET[charset])
+          row.lenenc_str.force_encoding(ENCODING_FOR_CHARSET[charset])
         end
       end
     end

@@ -6,10 +6,9 @@ require "openssl"
 class Nocturne
   class Socket
     def initialize(options)
-      @options = options
-      @sock = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM)
+      @sock = connect(options)
       @select_sock = [@sock]
-      @sock.connect ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || "localhost")
+      @options = options
     end
 
     MAX_BYTES = 32768
@@ -44,6 +43,19 @@ class Nocturne
 
     def ssl_sock
       Nocturne::SSLSocket.new(@sock, @options)
+    end
+
+    private
+
+    def connect(options)
+      if options[:host]
+        sock = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM)
+        sock.connect ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || "localhost")
+      else
+        sock = ::Socket.unix(options[:socket] || "/tmp/mysql.sock")
+      end
+
+      sock
     end
   end
 

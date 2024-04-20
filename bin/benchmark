@@ -100,7 +100,7 @@ else
   require 'trilogy'
   require 'benchmark/ips'
 
-  t = Trilogy.new(host: "127.0.0.1")
+  t = Trilogy.new
   t.change_db("trilogy_test")
 
   Benchmark.ips do |bm|
