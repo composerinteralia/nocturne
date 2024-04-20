@@ -15,6 +15,7 @@ require_relative "nocturne/write/packet"
 
 class Nocturne
   SSL_DISABLE = nil
+  # TODO: These values are meaningless at the moment
   SSL_VERIFY_IDENTITY = 1
   SSL_VERIFY_CA = 2
   SSL_REQUIRED_NOVERIFY = 3
@@ -29,6 +30,8 @@ class Nocturne
   QUERY_FLAGS_CAST = 1
   QUERY_FLAGS_CAST_BOOLEANS = 2
   QUERY_FLAGS_LOCAL_TIMEZONE = 4
+  QUERY_FLAGS_FLATTEN_ROWS = 8
+  QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS = 16
 
   attr_reader :server_version
   attr_accessor :query_flags
