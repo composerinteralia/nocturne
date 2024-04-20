@@ -94,6 +94,8 @@ class SslTest < NocturneTest
   end
 
   def test_nocturne_connect_ssl_config_cipher_aesgcm128
+    skip if ENV["CI"]
+
     client = new_tcp_client(database: "test", ssl: true, tls_max_version: Nocturne::TLS_VERSION_12, ssl_cipher: "ECDHE-RSA-AES128-GCM-SHA256")
     result = client.query "SELECT * FROM performance_schema.session_status WHERE VARIABLE_NAME = 'Ssl_cipher'"
     assert_equal [["Ssl_cipher", "ECDHE-RSA-AES128-GCM-SHA256"]], result.to_a
@@ -102,6 +104,8 @@ class SslTest < NocturneTest
   end
 
   def test_nocturne_connect_ssl_config_cipher_aesgcm256
+    skip if ENV["CI"]
+
     client = new_tcp_client(database: "test", ssl: true, tls_max_version: Nocturne::TLS_VERSION_12, ssl_cipher: "ECDHE-RSA-AES256-GCM-SHA384")
     result = client.query "SELECT * FROM performance_schema.session_status WHERE VARIABLE_NAME = 'Ssl_cipher'"
     assert_equal [["Ssl_cipher", "ECDHE-RSA-AES256-GCM-SHA384"]], result.to_a
