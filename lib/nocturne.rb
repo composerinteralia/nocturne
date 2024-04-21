@@ -3,6 +3,7 @@
 require "digest"
 require_relative "nocturne/connection"
 require_relative "nocturne/error"
+require_relative "nocturne/escaping"
 require_relative "nocturne/protocol"
 require_relative "nocturne/protocol/handshake"
 require_relative "nocturne/protocol/query"
@@ -14,6 +15,8 @@ require_relative "nocturne/version"
 require_relative "nocturne/write/packet"
 
 class Nocturne
+  include Escaping
+
   SSL_DISABLE = nil
   # TODO: These values are meaningless at the moment
   SSL_VERIFY_IDENTITY = 1
@@ -38,12 +41,8 @@ class Nocturne
 
   def initialize(options = {})
     @options = options
-    @conn = Nocturne::Connection.new(options)
-
-    handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
-    @server_version = handshake.server_version
     @query_flags = QUERY_FLAGS_CAST
-
+    connect
     change_db(options[:database]) if options[:database]
   end
 
@@ -90,5 +89,13 @@ class Nocturne
     end
 
     @conn.close
+  end
+
+  private
+
+  def connect
+    @conn = Nocturne::Connection.new(@options)
+    handshake = Protocol::Handshake.new(@conn, @options).tap(&:engage)
+    @server_version = handshake.server_version
   end
 end

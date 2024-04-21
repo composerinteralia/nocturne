@@ -17,7 +17,13 @@ class Nocturne
 
         @conn.read_packet do |packet|
           if packet.ok?
-            return true
+            packet.skip(1)
+            @conn.update_status(
+              affected_rows: packet.lenenc_int,
+              last_insert_id: packet.lenenc_int,
+              status_flags: packet.int16,
+              warnings: packet.int16
+            )
           elsif packet.err?
             raise Protocol.error(packet, ConnectionError)
           elsif packet.int8 == 0xFE # auth switch
@@ -30,6 +36,8 @@ class Nocturne
         end
       end
 
+      private
+
       def server_handshake
         @conn.read_packet do |handshake|
           _protocol_version = handshake.int8
@@ -39,7 +47,7 @@ class Nocturne
           handshake.skip(1)
           _capabilities = handshake.int16
           _character_set = handshake.int8
-          _status_flags = handshake.int16
+          @conn.update_status(status_flags: handshake.int16)
           _capabilities2 = handshake.int16
           auth_plugin_data_len = handshake.int8
           handshake.skip(10)
@@ -80,8 +88,6 @@ class Nocturne
           packet.nulstr(@auth_plugin_name)
         end
       end
-
-      private
 
       def auth_switch(plugin, data)
         @conn.write_packet do |packet|

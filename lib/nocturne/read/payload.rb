@@ -24,8 +24,7 @@ class Nocturne
         i = @pos
         @pos += 2
 
-        @payload.getbyte(i) |
-          @payload.getbyte(i + 1) << 8
+        @payload.getbyte(i) | @payload.getbyte(i + 1) << 8
       end
 
       def int24

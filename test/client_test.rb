@@ -440,41 +440,41 @@ class ClientTest < NocturneTest
   #   assert_nil client.close
   # end
 
-  # def test_nocturne_escape
-  #   client = new_tcp_client
-  #
-  #   assert_equal "hello", client.escape("hello")
-  #
-  #   assert_equal "\\\"\\0\\'\\\\\\n\\r\\Z",
-  #     client.escape("\"\0'\\\n\r\x1A")
-  #
-  #   assert_equal "\xff", client.escape("\xff")
-  #
-  #   str = "binary string".encode(Encoding::Windows_1252)
-  #   assert_equal Encoding::Windows_1252, client.escape(str).encoding
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_escape
+    client = new_tcp_client
 
-  # def test_nocturne_escape_ascii_compat
-  #   client = new_tcp_client
-  #
-  #   assert_raises Encoding::CompatibilityError do
-  #     client.escape("'\"\\".encode("UTF-16LE"))
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
+    assert_equal "hello", client.escape("hello")
 
-  # def test_nocturne_escape_no_blackslash_escapes
-  #   client = new_tcp_client
-  #
-  #   client.query("SET SQL_MODE=NO_BACKSLASH_ESCAPES")
-  #
-  #   assert_equal "hello '' world", client.escape("hello ' world")
-  # ensure
-  #   ensure_closed client
-  # end
+    assert_equal "\\\"\\0\\'\\\\\\n\\r\\Z",
+      client.escape("\"\0'\\\n\r\x1A")
+
+    assert_equal "\xff", client.escape("\xff")
+
+    str = "binary string".encode(Encoding::Windows_1252)
+    assert_equal Encoding::Windows_1252, client.escape(str).encoding
+  ensure
+    ensure_closed client
+  end
+
+  def test_nocturne_escape_ascii_compat
+    client = new_tcp_client
+
+    assert_raises Encoding::CompatibilityError do
+      client.escape("'\"\\".encode("UTF-16LE"))
+    end
+  ensure
+    ensure_closed client
+  end
+
+  def test_nocturne_escape_no_blackslash_escapes
+    client = new_tcp_client
+
+    client.query("SET SQL_MODE=NO_BACKSLASH_ESCAPES")
+
+    assert_equal "hello '' world", client.escape("hello ' world")
+  ensure
+    ensure_closed client
+  end
 
   # def test_nocturne_closed?
   #   client = new_tcp_client

@@ -2,6 +2,8 @@
 
 class Nocturne
   class Connection
+    attr_reader :status_flags, :warnings, :affected_rows, :last_insert_id
+
     def initialize(options)
       @sock = Nocturne::Socket.new(options)
       @write = Write::Packet.new
@@ -10,6 +12,11 @@ class Nocturne
       @read_pos = 0
       @read_len = 0
       @next_sequence = 0
+
+      @status_flags = nil
+      @warnings = nil
+      @affected_rows = nil
+      @last_insert_id = nil
     end
 
     def begin_command
@@ -54,6 +61,13 @@ class Nocturne
       end
 
       yield @read.payload if block_given?
+    end
+
+    def update_status(status_flags:, warnings: nil, affected_rows: nil, last_insert_id: nil)
+      @status_flags = status_flags
+      @warnings = warnings
+      @affected_rows = affected_rows
+      @last_insert_id = nil
     end
 
     def upgrade

@@ -73,8 +73,7 @@ class NocturneTest < Minitest::Test
       password: DEFAULT_PASS
     )
     name = k
-    # result = client.query("SHOW GLOBAL VARIABLES LIKE '#{client.escape name}'")
-    result = client.query("SHOW GLOBAL VARIABLES LIKE '#{name}'")
+    result = client.query("SHOW GLOBAL VARIABLES LIKE '#{client.escape name}'")
     h[k] = if result.count == 0
       nil
     else

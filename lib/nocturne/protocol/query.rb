@@ -21,13 +21,19 @@ class Nocturne
         end
 
         column_count = 0
-        @conn.read_packet do |payload|
-          if payload.ok?
-            # Done. No results.
-          elsif payload.err?
-            raise Protocol.error(payload, QueryError)
+        @conn.read_packet do |packet|
+          if packet.ok?
+            packet.skip(1)
+            @conn.update_status(
+              affected_rows: packet.lenenc_int,
+              last_insert_id: packet.lenenc_int,
+              status_flags: packet.int16,
+              warnings: packet.int16
+            )
+          elsif packet.err?
+            raise Protocol.error(packet, QueryError)
           else
-            column_count = payload.lenenc_int
+            column_count = packet.lenenc_int
           end
         end
 
@@ -76,6 +82,11 @@ class Nocturne
         while more_rows
           @conn.read_packet do |row|
             if row.eof?
+              @conn.update_status(
+                warnings: row.int16,
+                status_flags: row.int16
+              )
+
               more_rows = false
               break
             end
