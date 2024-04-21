@@ -20,6 +20,7 @@ class Nocturne
     end
 
     def begin_command
+      raise ConnectionClosed if closed?
       raise "unread data" unless buffer_fully_read?
       raise "unwritten data" unless @write.empty?
       @next_sequence = 0
@@ -76,6 +77,11 @@ class Nocturne
 
     def close
       @sock.close
+      @closed = true
+    end
+
+    def closed?
+      @closed
     end
 
     private

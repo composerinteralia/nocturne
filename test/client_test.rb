@@ -74,16 +74,16 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_ping_after_close_raises
-  #   client = new_tcp_client
-  #   assert client.ping
-  #   client.close
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     client.ping
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_ping_after_close_raises
+    client = new_tcp_client
+    assert client.ping
+    client.close
+    assert_raises Nocturne::ConnectionClosed do
+      client.ping
+    end
+  ensure
+    ensure_closed client
+  end
 
   def test_nocturne_change_db
     client = new_tcp_client
@@ -101,16 +101,16 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_change_db_after_close_raises
-  #   client = new_tcp_client
-  #   assert client.change_db "test"
-  #   client.close
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     refute client.change_db "test"
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_change_db_after_close_raises
+    client = new_tcp_client
+    assert client.change_db "test"
+    client.close
+    assert_raises Nocturne::ConnectionClosed do
+      refute client.change_db "test"
+    end
+  ensure
+    ensure_closed client
+  end
 
   def test_nocturne_query
     client = new_tcp_client
@@ -335,17 +335,17 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_query_after_close_raises
-  #   client = new_tcp_client
-  #   assert client.query "SELECT 1"
-  #   client.close
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     refute client.query "SELECT 1"
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
-  #
+  def test_nocturne_query_after_close_raises
+    client = new_tcp_client
+    assert client.query "SELECT 1"
+    client.close
+    assert_raises Nocturne::ConnectionClosed do
+      refute client.query "SELECT 1"
+    end
+  ensure
+    ensure_closed client
+  end
+
   # def test_nocturne_last_insert_id
   #   client = new_tcp_client
   #   create_test_table(client)
@@ -434,11 +434,11 @@ class ClientTest < NocturneTest
   #   ensure_closed client
   # end
 
-  # def test_nocturne_close_twice_succeeds
-  #   client = new_tcp_client
-  #   assert_nil client.close
-  #   assert_nil client.close
-  # end
+  def test_nocturne_close_twice_succeeds
+    client = new_tcp_client
+    assert_nil client.close
+    assert_nil client.close
+  end
 
   def test_nocturne_escape
     client = new_tcp_client
@@ -476,18 +476,18 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_closed?
-  #   client = new_tcp_client
-  #
-  #   refute_predicate client, :closed?
-  #
-  #   client.close
-  #
-  #   assert_predicate client, :closed?
-  # ensure
-  #   ensure_closed client
-  # end
-  #
+  def test_nocturne_closed
+    client = new_tcp_client
+
+    refute_predicate client, :closed?
+
+    client.close
+
+    assert_predicate client, :closed?
+  ensure
+    ensure_closed client
+  end
+
   # def test_nocturne_check
   #   client = new_tcp_client
   #
@@ -586,15 +586,15 @@ class ClientTest < NocturneTest
   #   end
   # end
 
-  # def test_large_query
-  #   client = new_tcp_client
-  #
-  #   size = 1_000_000
-  #
-  #   assert_equal size, client.query("SELECT '#{"1" * size}'").to_a[0][0].size
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_large_query
+    client = new_tcp_client
+
+    size = 1_000_000
+
+    assert_equal size, client.query("SELECT '#{"1" * size}'").to_a[0][0].size
+  ensure
+    ensure_closed client
+  end
 
   # def test_cast_exception_during_query_does_not_close_the_connection
   #   client = new_tcp_client
@@ -752,10 +752,10 @@ class ClientTest < NocturneTest
   #   ensure_closed client
   # end
 
-  # def test_server_version
-  #   client = new_tcp_client
-  #   assert_match %r{\A\d+\.\d+\.\d+}, client.server_version
-  # end
+  def test_server_version
+    client = new_tcp_client
+    assert_match %r{\A\d+\.\d+\.\d+}, client.server_version
+  end
 
   # def test_server_info
   #   client = new_tcp_client
@@ -1121,19 +1121,18 @@ class ClientTest < NocturneTest
     # assert_equal Encoding::Windows_31J, result.encoding
   end
 
-  # def test_connection_options_casting
-  #   options = {
-  #     host: DEFAULT_HOST,
-  #     port: DEFAULT_PORT.to_s,
-  #     username: DEFAULT_USER,
-  #     password: DEFAULT_PASS,
-  #     ssl: "1"
-  #   }
-  #   client = new_tcp_client(**options)
-  #
-  #   assert client.query("SELECT 1")
-  # end
-  #
+  def test_connection_options_casting
+    options = {
+      host: DEFAULT_HOST,
+      port: DEFAULT_PORT.to_s,
+      username: DEFAULT_USER,
+      password: DEFAULT_PASS
+    }
+    client = new_tcp_client(**options)
+
+    assert client.query("SELECT 1")
+  end
+
   # def test_error_classes_exclusively_match_subclasses
   #   klass = Nocturne::SyscallError::ECONNRESET
   #   assert_operator klass, :===, klass.new

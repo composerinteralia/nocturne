@@ -82,6 +82,8 @@ class Nocturne
   end
 
   def close
+    return if @conn.closed?
+
     @conn.begin_command
 
     @conn.write_packet do |packet|
@@ -89,6 +91,12 @@ class Nocturne
     end
 
     @conn.close
+
+    nil
+  end
+
+  def closed?
+    @conn.closed?
   end
 
   private

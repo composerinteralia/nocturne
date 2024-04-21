@@ -4,7 +4,7 @@ class Nocturne
   class Error < StandardError
     attr_reader :error_code
 
-    def initialize(message, error_code = nil)
+    def initialize(message = nil, error_code = nil)
       @error_code = error_code
       super(message)
     end
@@ -14,6 +14,9 @@ class Nocturne
   end
 
   class ConnectionError < Error
+  end
+
+  class ConnectionClosed < ConnectionError
   end
 
   class QueryError < Error
