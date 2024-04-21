@@ -3,6 +3,19 @@
 A pure-Ruby client library for MySQL-compatible database servers, inspired by
 https://github.com/trilogy-libraries/trilogy
 
+## TODO
+
+- Multi-statement and multi-result
+- caching_sha2_password auth
+- Capabilities exchange
+- Timeout options
+- Max packet options
+- SSL options
+- Charset option and more encodings
+- #connected_host, #connection_options, #query_with_flags, #set_server_option, #server_info
+- #last_insert_id, #affected_rows, #warnings, #in_transaction, #gtid
+- Lots of error handling
+
 ## Installation
 
 Install the gem and add to the application's Gemfile by executing:

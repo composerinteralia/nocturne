@@ -549,8 +549,6 @@ class Nocturne
 
         _name, charset, len, type, _flags, decimals = column
 
-        # TODO: maybe try to write these without all the extra strings, although
-        # casting is not the slowest thing here
         case type
         when BIT
           if len == 1 && !(@flags & QUERY_FLAGS_CAST_BOOLEANS).zero?
