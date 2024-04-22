@@ -52,7 +52,7 @@ class Nocturne
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, Protocol::COM_INIT_DB)
+      packet.int8(Protocol::COM_INIT_DB)
       packet.str(db)
     end
 
@@ -73,7 +73,7 @@ class Nocturne
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, Protocol::COM_PING)
+      packet.int8(Protocol::COM_PING)
     end
 
     @conn.read_packet do |payload|
@@ -89,7 +89,7 @@ class Nocturne
     @conn.begin_command
 
     @conn.write_packet do |packet|
-      packet.int(1, Protocol::COM_QUIT)
+      packet.int8(Protocol::COM_QUIT)
     end
 
     @conn.close

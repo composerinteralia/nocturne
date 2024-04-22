@@ -63,13 +63,15 @@ class Nocturne
         @options[:read_timeout] = original_read_timeout
       end
 
+      UNUSED = "\0".b * 23
+
       def ssl_request
         @conn.write_packet do |packet|
           # TODO don't hardcode all this
-          packet.int(4, 0x018aaa00) # capabilities (ssl capability set)
-          packet.int(4, 0xffffff) # max packet size
-          packet.int(1, 0x2d) # charset
-          packet.int(23, 0) # unused
+          packet.int32(0x018aaa00) # capabilities (ssl capability set)
+          packet.int32(0xffffff) # max packet size
+          packet.int8(0x2d) # charset
+          packet.str(UNUSED)
         end
 
         @conn.upgrade
@@ -78,18 +80,18 @@ class Nocturne
       def client_handshake
         @conn.write_packet do |packet|
           # TODO don't hardcode all this
-          packet.int(4, 0x018aa200) # capabilities
-          packet.int(4, 0xffffff) # max packet size
-          packet.int(1, 0x2d) # charset
-          packet.int(23, 0) # unused
+          packet.int32(0x018aa200) # capabilities (ssl capability set)
+          packet.int32(0xffffff) # max packet size
+          packet.int8(0x2d) # charset
+          packet.str(UNUSED)
 
           packet.nulstr(@options[:username] || "root")
 
           if @auth_plugin_name == "mysql_native_password" && password?
-            packet.int(1, 20)
+            packet.int8(20)
             packet.str(mysql_native_password(@auth_plugin_data))
           else
-            packet.int(1, 0)
+            packet.int8(0)
           end
 
           packet.nulstr(@auth_plugin_name)

@@ -26,12 +26,15 @@ class Nocturne
         @buffer.empty?
       end
 
-      def int(bytes, value)
-        while bytes > 0
-          @buffer << (value & 0xff)
-          value >>= 8
-          bytes -= 1
-        end
+      def int8(value)
+        @buffer << (value & 0xFF)
+      end
+
+      def int32(value)
+        @buffer << (value & 0xFF)
+        @buffer << ((value >> 8) & 0xFF)
+        @buffer << ((value >> 16) & 0xFF)
+        @buffer << ((value >> 24) & 0xFF)
       end
 
       def str(value)
