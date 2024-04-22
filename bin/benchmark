@@ -72,6 +72,14 @@ when "stackprof"
       n.query("SELECT * from nocturne_test")
     end
   end
+
+  ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
+
+  StackProf.run(mode: :wall, out: "./tmp/stackprof-escape") do
+    50000.times do
+      n.escape(ESCAPE_STR)
+    end
+  end
 when "strings"
   require "objspace"
   GC.start
@@ -103,6 +111,20 @@ else
   t = Trilogy.new
   t.change_db("trilogy_test")
 
+  ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
   Benchmark.ips do |bm|
     bm.report("trilogy") do
       t.query("SELECT * FROM nocturne_test")
@@ -110,6 +132,18 @@ else
 
     bm.report("nocturne") do
       n.query("SELECT * FROM nocturne_test")
+    end
+
+    bm.compare!
+  end
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      Trilogy.new.close
+    end
+
+    bm.report("nocturne") do
+      Nocturne.new.close
     end
 
     bm.compare!
