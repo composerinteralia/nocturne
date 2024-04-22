@@ -11,11 +11,13 @@ require_relative "nocturne/read/packet"
 require_relative "nocturne/read/payload"
 require_relative "nocturne/result"
 require_relative "nocturne/socket"
+require_relative "nocturne/timeouts"
 require_relative "nocturne/version"
 require_relative "nocturne/write/packet"
 
 class Nocturne
   include Escaping
+  include Timeouts
 
   SSL_DISABLE = nil
   # TODO: These values are meaningless at the moment
@@ -97,26 +99,6 @@ class Nocturne
 
   def closed?
     @conn.closed?
-  end
-
-  def read_timeout=(timeout)
-    raise ConnectionClosed if @conn.closed?
-    @options[:read_timeout] = timeout
-  end
-
-  def read_timeout
-    raise ConnectionClosed if @conn.closed?
-    @options[:read_timeout]
-  end
-
-  def write_timeout=(timeout)
-    raise ConnectionClosed if @conn.closed?
-    @options[:write_timeout] = timeout
-  end
-
-  def write_timeout
-    raise ConnectionClosed if @conn.closed?
-    @options[:write_timeout]
   end
 
   private

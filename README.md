@@ -8,7 +8,6 @@ https://github.com/trilogy-libraries/trilogy
 - Multi-statement and multi-result
 - caching_sha2_password auth
 - Capabilities exchange
-- Timeout options
 - Max packet options
 - SSL options
 - Charset option and more encodings
