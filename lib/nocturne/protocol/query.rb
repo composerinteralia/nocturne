@@ -82,6 +82,7 @@ class Nocturne
         while more_rows
           @conn.read_packet do |row|
             if row.eof?
+              row.skip(1)
               @conn.update_status(
                 warnings: row.int16,
                 status_flags: row.int16

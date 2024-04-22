@@ -76,7 +76,7 @@ when "stackprof"
   ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
 
   StackProf.run(mode: :wall, out: "./tmp/stackprof-escape") do
-    50000.times do
+    100000.times do
       n.escape(ESCAPE_STR)
     end
   end

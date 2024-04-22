@@ -22,26 +22,30 @@ class Nocturne
         raise Encoding::CompatibilityError, "input string must be ASCII-compatible"
       end
 
-      res = "".b
+      res = str.dup
+      pos = 0
 
       i = 0
       j = str.length
       while i < j
         byte = str.getbyte(i)
 
-        if (@conn.status_flags & SERVER_STATUS_NO_BACKSLASH_ESCAPES).zero? && (escaped = ESCAPES[byte])
-          res << "\\"
-          res << escaped
+        if (@conn.status_flags & SERVER_STATUS_NO_BACKSLASH_ESCAPES).zero?
+          if (escaped = ESCAPES[byte])
+            res.bytesplice(pos, 0, "\\")
+            pos += 1
+            res[pos] = escaped
+          end
         elsif byte == SINGLE_QUOTE
-          res << "''"
-        else
-          res << byte
+          res.bytesplice(pos, 0, "'")
+          pos += 1
         end
 
         i += 1
+        pos += 1
       end
 
-      res.force_encoding(encoding)
+      res
     end
   end
 end
