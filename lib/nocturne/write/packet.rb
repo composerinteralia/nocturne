@@ -1,7 +1,8 @@
 class Nocturne
   module Write
     class Packet
-      LENGTH_PLACEHOLDER = "    ".b
+      HEADER_PLACEHOLDER = "    ".b
+      HEADER_LENGTH = HEADER_PLACEHOLDER.length
 
       attr_reader :sequence
 
@@ -10,10 +11,11 @@ class Nocturne
         @length = 0
       end
 
-      def build(sequence)
-        @buffer << LENGTH_PLACEHOLDER
+      def build(sequence, options)
+        @buffer << HEADER_PLACEHOLDER
         @sequence = sequence
         yield self
+        check_max_allowed_packet(options[:max_allowed_packet]) if options[:max_allowed_packet]
         finalize_packets
       end
 
@@ -58,11 +60,17 @@ class Nocturne
 
       private
 
+      def check_max_allowed_packet(max_allowed_packet)
+        if @buffer.length - HEADER_LENGTH >= max_allowed_packet
+          raise QueryError, "max packet exceeded"
+        end
+      end
+
       MAX_PAYLOAD_LEN = 0xFFFFFF
 
       def finalize_packets
         @length = @buffer.length
-        remaining_length = @length - 4
+        remaining_length = @length - HEADER_LENGTH
         packet_start = 0
 
         write_packet_header(packet_start, remaining_length)
@@ -72,7 +80,7 @@ class Nocturne
           remaining_length -= MAX_PAYLOAD_LEN
           packet_start += MAX_PAYLOAD_LEN + 4
 
-          @buffer.bytesplice(packet_start, 0, LENGTH_PLACEHOLDER)
+          @buffer.bytesplice(packet_start, 0, HEADER_PLACEHOLDER)
           write_packet_header(packet_start, remaining_length)
         end
       end

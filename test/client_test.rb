@@ -800,11 +800,11 @@ class ClientTest < NocturneTest
 
     assert client.query query_for_target_packet_size(4 * 1024 * 1024)
 
-    # exception = assert_raises Nocturne::QueryError do
-    #   client.query query_for_target_packet_size(4 * 1024 * 1024 + 1)
-    # end
+    exception = assert_raises Nocturne::QueryError do
+      client.query query_for_target_packet_size(4 * 1024 * 1024 + 1)
+    end
 
-    # assert_equal "nocturne_query_send: TRILOGY_MAX_PACKET_EXCEEDED", exception.message
+    assert_equal "max packet exceeded", exception.message
 
     assert client.ping
   ensure
@@ -820,11 +820,11 @@ class ClientTest < NocturneTest
 
     assert client.query query_for_target_packet_size(32 * 1024 * 1024)
 
-    # exception = assert_raises Nocturne::QueryError do
-    #   client.query query_for_target_packet_size(32 * 1024 * 1024 + 1)
-    # end
-    #
-    # assert_equal "nocturne_query_send: TRILOGY_MAX_PACKET_EXCEEDED", exception.message
+    exception = assert_raises Nocturne::QueryError do
+      client.query query_for_target_packet_size(32 * 1024 * 1024 + 1)
+    end
+
+    assert_equal "max packet exceeded", exception.message
 
     assert client.ping
   ensure
@@ -840,11 +840,11 @@ class ClientTest < NocturneTest
 
     assert client.query query_for_target_packet_size(24 * 1024 * 1024)
 
-    # exception = assert_raises Nocturne::QueryError do
-    #   client.query query_for_target_packet_size(24 * 1024 * 1024 + 1)
-    # end
-    #
-    # assert_equal "nocturne_query_send: TRILOGY_MAX_PACKET_EXCEEDED", exception.message
+    exception = assert_raises Nocturne::QueryError do
+      client.query query_for_target_packet_size(24 * 1024 * 1024 + 1)
+    end
+
+    assert_equal "max packet exceeded", exception.message
 
     assert client.ping
   ensure
@@ -860,23 +860,24 @@ class ClientTest < NocturneTest
 
     assert client.query query_for_target_packet_size(24 * 1024 * 1024)
 
-    # exception = assert_raises Nocturne::QueryError do
-    #   client.query query_for_target_packet_size(32 * 1024 * 1024 + 1)
-    # end
-    #
-    # assert_equal "nocturne_query_send: TRILOGY_MAX_PACKET_EXCEEDED", exception.message
-    #
+    exception = assert_raises Nocturne::QueryError do
+      client.query query_for_target_packet_size(32 * 1024 * 1024 + 1)
+    end
+
+    assert_equal "max packet exceeded", exception.message
+
     # exception = assert_raises_connection_error do
-    #   client.query query_for_target_packet_size(24 * 1024 * 1024 + 1)
-    # end
-    #
-    # refute_match(/TRILOGY_MAX_PACKET_EXCEEDED/, exception.message)
-    #
+    exception = assert_raises do
+      client.query query_for_target_packet_size(24 * 1024 * 1024 + 1)
+    end
+
+    refute_match(/max packet exceeded/, exception.message)
+
     # assert_raises_connection_error do
     #   client.ping
     # end
-  ensure
-    ensure_closed client
+    # ensure
+    # ensure_closed client
   end
 
   def test_absolute_maximum_packet_size
@@ -888,11 +889,11 @@ class ClientTest < NocturneTest
 
     assert client.query query_for_target_packet_size(1024 * 1024 * 1024)
 
-    # exception = assert_raises Nocturne::QueryError do
-    #   client.query query_for_target_packet_size(1024 * 1024 * 1024 + 1)
-    # end
-    #
-    # assert_equal "nocturne_query_send: TRILOGY_MAX_PACKET_EXCEEDED", exception.message
+    exception = assert_raises Nocturne::QueryError do
+      client.query query_for_target_packet_size(1024 * 1024 * 1024 + 1)
+    end
+
+    assert_equal "max packet exceeded", exception.message
 
     assert client.ping
   ensure

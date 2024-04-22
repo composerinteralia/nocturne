@@ -12,6 +12,7 @@ class Nocturne
       @read_pos = 0
       @read_len = 0
       @next_sequence = 0
+      @options = options
 
       @status_flags = nil
       @warnings = nil
@@ -27,7 +28,7 @@ class Nocturne
     end
 
     def write_packet(&blk)
-      @write.build(@next_sequence, &blk)
+      @write.build(@next_sequence, @options, &blk)
 
       written = 0
       while (data = @write.data(written))
