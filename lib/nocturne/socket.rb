@@ -1,5 +1,8 @@
 # frozen_string_literal:true
 
+# standard:disable Lint/MissingCopEnableDirective
+# standard:disable Style/YodaCondition
+
 require "socket"
 require "openssl"
 
@@ -17,8 +20,8 @@ class Nocturne
       loop do
         result = @sock.read_nonblock(MAX_BYTES, buffer, exception: false)
 
-        if :wait_readable == result # standard:disable Style/YodaCondition
-          IO.select(@select_sock)
+        if :wait_readable == result
+          IO.select(@select_sock, nil, nil, @options[:read_timeout]) || raise(TimeoutError)
         else
           return result
         end
@@ -29,8 +32,8 @@ class Nocturne
       loop do
         result = @sock.write_nonblock(data, exception: false)
 
-        if :wait_writable == result # standard:disable Style/YodaCondition
-          IO.select(nil, @select_sock)
+        if :wait_writable == result
+          IO.select(nil, @select_sock, nil, @options[:write_timeout]) || raise(TimeoutError)
         else
           return result
         end
@@ -50,7 +53,8 @@ class Nocturne
     def connect(options)
       if options[:host]
         sock = ::Socket.new(::Socket::AF_INET, ::Socket::SOCK_STREAM)
-        sock.connect ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || "localhost")
+        addr = ::Socket.pack_sockaddr_in(options[:port] || 3306, options[:host] || "localhost")
+        sock.connect_nonblock(addr, exception: false)
       else
         sock = ::Socket.unix(options[:socket] || "/tmp/mysql.sock")
       end
@@ -64,18 +68,17 @@ class Nocturne
       @sock = OpenSSL::SSL::SSLSocket.new(sock, ssl_context(options))
       @sock.connect
       @select_sock = [@sock]
+      @options = options
     end
-
-    MAX_BYTES = 32768
 
     def recv(buffer)
       loop do
-        result = @sock.read_nonblock(MAX_BYTES, buffer, exception: false)
+        result = @sock.read_nonblock(Nocturne::Socket::MAX_BYTES, buffer, exception: false)
 
-        if :wait_readable == result # standard:disable Style/YodaCondition
-          IO.select(@select_sock)
-        elsif :wait_writable == result # standard:disable Style/YodaCondition
-          IO.select(nil, @select_sock)
+        if :wait_readable == result
+          IO.select(@select_sock, nil, nil, @options[:read_timeout]) || raise(TimeoutError)
+        elsif :wait_writable == result
+          IO.select(nil, @select_sock, nil, @options[:write_timeout]) || raise(TimeoutError)
         else
           return result
         end
@@ -86,10 +89,10 @@ class Nocturne
       loop do
         result = @sock.write_nonblock(data, exception: false)
 
-        if :wait_readable == result # standard:disable Style/YodaCondition
-          IO.select(@select_sock)
-        elsif :wait_writable == result # standard:disable Style/YodaCondition
-          IO.select(nil, @select_sock)
+        if :wait_readable == result
+          IO.select(@select_sock, nil, nil, @options[:read_timeout]) || raise(TimeoutError)
+        elsif :wait_writable == result
+          IO.select(nil, @select_sock, nil, @options[:write_timeout]) || raise(TimeoutError)
         else
           return result
         end

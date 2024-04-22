@@ -13,10 +13,9 @@ class Nocturne
     end
 
     def self.read_error(packet)
-      packet.int8
+      packet.skip(1) # Error
       code = packet.int16
-      packet.strn(1)
-      packet.strn(5)
+      packet.skip(6) # SQL state
       message = packet.eof_str
       [code, message]
     end

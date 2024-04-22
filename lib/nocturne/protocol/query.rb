@@ -81,6 +81,8 @@ class Nocturne
         more_rows = true
         while more_rows
           @conn.read_packet do |row|
+            raise Protocol.error(row, QueryError) if row.err?
+
             if row.eof?
               row.skip(1)
               @conn.update_status(

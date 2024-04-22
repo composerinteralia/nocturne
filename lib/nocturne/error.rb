@@ -21,4 +21,7 @@ class Nocturne
 
   class QueryError < Error
   end
+
+  class TimeoutError < Error
+  end
 end

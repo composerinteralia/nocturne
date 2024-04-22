@@ -39,7 +39,12 @@ class Nocturne
       private
 
       def server_handshake
+        original_read_timeout = @options[:read_timeout]
+        @options[:read_timeout] = @options[:connect_timeout] || @options[:write_timeout]
+
         @conn.read_packet do |handshake|
+          raise Protocol.error(handshake, ConnectionError) if handshake.err?
+
           _protocol_version = handshake.int8
           @server_version = handshake.nulstr
           _thread_id = handshake.int32
@@ -54,6 +59,8 @@ class Nocturne
           @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max)
           @auth_plugin_name = handshake.nulstr
         end
+      ensure
+        @options[:read_timeout] = original_read_timeout
       end
 
       def ssl_request

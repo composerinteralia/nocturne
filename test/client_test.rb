@@ -501,90 +501,90 @@ class ClientTest < NocturneTest
   # ensure
   #   ensure_closed client
   # end
-  #
-  # def test_read_timeout
-  #   client = new_tcp_client(read_timeout: 0.1)
-  #
-  #   assert_raises Nocturne::TimeoutError do
-  #     client.query("SELECT SLEEP(1)")
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
-  #
-  # def test_adjustable_read_timeout
-  #   client = new_tcp_client(read_timeout: 5)
-  #   assert client.query("SELECT SLEEP(0.2)")
-  #   client.read_timeout = 0.1
-  #   assert_equal 0.1, client.read_timeout
-  #   assert_raises Nocturne::TimeoutError do
-  #     client.query("SELECT SLEEP(1)")
-  #   end
-  # ensure
-  #   ensure_closed client
-  # end
-  #
-  # def test_read_timeout_closed_connection
-  #   client = new_tcp_client(read_timeout: 5)
-  #   client.close
-  #   ensure_closed client
-  #
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     client.read_timeout
-  #   end
-  #
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     client.read_timeout = 42
-  #   end
-  # end
-  #
-  # def test_adjustable_write_timeout
-  #   client = new_tcp_client(write_timeout: 5)
-  #   assert_equal 5.0, client.write_timeout
-  #   client.write_timeout = 0.1
-  #   assert_equal 0.1, client.write_timeout
-  # ensure
-  #   ensure_closed client
-  # end
 
-  # def test_write_timeout_closed_connection
-  #   client = new_tcp_client
-  #   client.close
-  #   ensure_closed client
-  #
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     client.write_timeout
-  #   end
-  #
-  #   assert_raises Nocturne::ConnectionClosed do
-  #     client.write_timeout = 42
-  #   end
-  # end
+  def test_read_timeout
+    client = new_tcp_client(read_timeout: 0.1)
 
-  # def test_handshake_timeout
-  #   serv = TCPServer.new(0)
-  #   port = serv.addr[1]
-  #
-  #   assert_raises Nocturne::TimeoutError do
-  #     new_tcp_client(host: "127.0.0.1", port: port, connect_timeout: 0.1)
-  #   end
-  # ensure
-  #   ensure_closed serv
-  # end
-  #
-  # def test_connect_timeout
-  #   assert_raises Nocturne::TimeoutError do
-  #     # 192.0.2.0/24 is TEST-NET-1 which should only be for docs/examples
-  #     new_tcp_client(host: "192.0.2.1", connect_timeout: 0.1)
-  #   end
-  # end
+    assert_raises Nocturne::TimeoutError do
+      client.query("SELECT SLEEP(1)")
+    end
+  ensure
+    ensure_closed client
+  end
 
-  # def test_connect_timeout_with_only_write_timeout
-  #   assert_raises Nocturne::TimeoutError do
-  #     # 192.0.2.0/24 is TEST-NET-1 which should only be for docs/examples
-  #     new_tcp_client(host: "192.0.2.1", write_timeout: 0.1)
-  #   end
-  # end
+  def test_adjustable_read_timeout
+    client = new_tcp_client(read_timeout: 5)
+    assert client.query("SELECT SLEEP(0.2)")
+    client.read_timeout = 0.1
+    assert_equal 0.1, client.read_timeout
+    assert_raises Nocturne::TimeoutError do
+      client.query("SELECT SLEEP(1)")
+    end
+  ensure
+    ensure_closed client
+  end
+
+  def test_read_timeout_closed_connection
+    client = new_tcp_client(read_timeout: 5)
+    client.close
+    ensure_closed client
+
+    assert_raises Nocturne::ConnectionClosed do
+      client.read_timeout
+    end
+
+    assert_raises Nocturne::ConnectionClosed do
+      client.read_timeout = 42
+    end
+  end
+
+  def test_adjustable_write_timeout
+    client = new_tcp_client(write_timeout: 5)
+    assert_equal 5.0, client.write_timeout
+    client.write_timeout = 0.1
+    assert_equal 0.1, client.write_timeout
+  ensure
+    ensure_closed client
+  end
+
+  def test_write_timeout_closed_connection
+    client = new_tcp_client
+    client.close
+    ensure_closed client
+
+    assert_raises Nocturne::ConnectionClosed do
+      client.write_timeout
+    end
+
+    assert_raises Nocturne::ConnectionClosed do
+      client.write_timeout = 42
+    end
+  end
+
+  def test_handshake_timeout
+    serv = TCPServer.new(0)
+    port = serv.addr[1]
+
+    assert_raises Nocturne::TimeoutError do
+      new_tcp_client(host: "127.0.0.1", port: port, connect_timeout: 0.1)
+    end
+  ensure
+    ensure_closed serv
+  end
+
+  def test_connect_timeout
+    assert_raises Nocturne::TimeoutError do
+      # 192.0.2.0/24 is TEST-NET-1 which should only be for docs/examples
+      new_tcp_client(host: "192.0.2.1", connect_timeout: 0.1)
+    end
+  end
+
+  def test_connect_timeout_with_only_write_timeout
+    assert_raises Nocturne::TimeoutError do
+      # 192.0.2.0/24 is TEST-NET-1 which should only be for docs/examples
+      new_tcp_client(host: "192.0.2.1", write_timeout: 0.1)
+    end
+  end
 
   def test_large_query
     client = new_tcp_client
@@ -656,37 +656,38 @@ class ClientTest < NocturneTest
   #   end
   # end
 
-  # def test_timeout_error
-  #   client_1 = new_tcp_client
-  #   client_2 = new_tcp_client
-  #
-  #   create_test_table(client_1)
-  #   client_2.change_db("test")
-  #
-  #   client_1.query("INSERT INTO nocturne_test (varchar_test) VALUES ('a')")
-  #   client_1.query("BEGIN")
-  #   client_1.query("SELECT * FROM nocturne_test FOR UPDATE")
-  #
-  #   client_2.query("SET SESSION innodb_lock_wait_timeout = 1;")
-  #   assert_raises Nocturne::TimeoutError do
-  #     client_2.query("SELECT * FROM nocturne_test FOR UPDATE")
-  #   end
-  # ensure
-  #   ensure_closed(client_1)
-  #   ensure_closed(client_2)
-  # end
-  #
-  # def test_connection_closed_error
-  #   client = new_tcp_client
-  #
-  #   client.close
-  #
-  #   err = assert_raises Nocturne::ConnectionClosed do
-  #     client.query("SELECT 1")
-  #   end
-  #
-  #   assert_equal "Attempted to use closed connection", err.message
-  # end
+  def test_timeout_error
+    client_1 = new_tcp_client
+    client_2 = new_tcp_client
+
+    create_test_table(client_1)
+    client_2.change_db("test")
+
+    client_1.query("INSERT INTO nocturne_test (varchar_test) VALUES ('a')")
+    client_1.query("BEGIN")
+    client_1.query("SELECT * FROM nocturne_test FOR UPDATE")
+
+    client_2.query("SET SESSION innodb_lock_wait_timeout = 1;")
+    # assert_raises Nocturne::TimeoutError do
+    assert_raises do
+      client_2.query("SELECT * FROM nocturne_test FOR UPDATE")
+    end
+  ensure
+    ensure_closed(client_1)
+    ensure_closed(client_2)
+  end
+
+  def test_connection_closed_error
+    client = new_tcp_client
+
+    client.close
+
+    assert_raises Nocturne::ConnectionClosed do
+      client.query("SELECT 1")
+    end
+
+    # assert_equal "Attempted to use closed connection", err.message
+  end
 
   def test_query_error
     client = new_tcp_client
@@ -897,41 +898,39 @@ class ClientTest < NocturneTest
   ensure
     ensure_closed client
   end
-  #
-  # def test_too_many_connections
-  #   # TODO
-  #   skip("test hangs—probably stuck in a SELECT (should have a timeout)")
-  #
-  #   connection_error_packet = [
-  #     0x17, 0x00, 0x00, 0x00, 0xff, 0x10, 0x04, 0x54,
-  #     0x6f, 0x6f, 0x20, 0x6d, 0x61, 0x6e, 0x79, 0x20,
-  #     0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69,
-  #     0x6f, 0x6e, 0x73
-  #   ].pack("c*")
-  #
-  #   fake_server = TCPServer.new("127.0.0.1", 0)
-  #   _, fake_port = fake_server.addr
-  #
-  #   accept_thread = Thread.new do
-  #     # this will block until we connect below this thread creation
-  #     write_side = fake_server.accept
-  #
-  #     write_side.write(connection_error_packet)
-  #
-  #     write_side.close
-  #   end
-  #
-  #   ex = assert_raises Nocturne::ProtocolError do
-  #     new_tcp_client(host: "127.0.0.1", port: fake_port)
-  #   end
-  #
-  #   assert_equal 1040, ex.error_code
-  #   assert ex.is_a?(Nocturne::DatabaseError)
-  # ensure
-  #   accept_thread.join
-  #   fake_server.close
-  # end
-  #
+
+  def test_too_many_connections
+    connection_error_packet = [
+      0x17, 0x00, 0x00, 0x00, 0xff, 0x10, 0x04, 0x54,
+      0x6f, 0x6f, 0x20, 0x6d, 0x61, 0x6e, 0x79, 0x20,
+      0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69,
+      0x6f, 0x6e, 0x73
+    ].pack("c*")
+
+    fake_server = TCPServer.new("127.0.0.1", 0)
+    _, fake_port = fake_server.addr
+
+    accept_thread = Thread.new do
+      # this will block until we connect below this thread creation
+      write_side = fake_server.accept
+
+      write_side.write(connection_error_packet)
+
+      write_side.close
+    end
+
+    # ex = assert_raises Nocturne::ProtocolError do
+    ex = assert_raises do
+      new_tcp_client(host: "127.0.0.1", port: fake_port, write_timeout: 1, read_timeout: 1)
+    end
+
+    assert_equal 1040, ex.error_code
+    # assert ex.is_a?(Nocturne::DatabaseError)
+  ensure
+    accept_thread.join
+    fake_server.close
+  end
+
   # def test_no_reconnect_on_error
   #   client = new_tcp_client
   #
