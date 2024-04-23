@@ -1093,17 +1093,17 @@ class ClientTest < NocturneTest
   #   assert_equal "Unknown or unsupported encoding: invalid", err.message
   # end
   #
-  # def test_character_encoding
-  #   client = new_tcp_client(encoding: "cp932")
-  #
-  #   assert_equal "cp932", client.query("SELECT @@character_set_client").first.first
-  #   assert_equal "cp932", client.query("SELECT @@character_set_results").first.first
-  #   assert_equal "cp932", client.query("SELECT @@character_set_connection").first.first
-  #   assert_equal "cp932_japanese_ci", client.query("SELECT @@collation_connection").first.first
-  #
-  #   expected = "こんにちは".encode(Encoding::CP932)
-  #   assert_equal expected, client.query("SELECT 'こんにちは'").to_a.first.first
-  # end
+  def test_character_encoding
+    client = new_tcp_client(encoding: "cp932")
+
+    assert_equal "cp932", client.query("SELECT @@character_set_client").first.first
+    assert_equal "cp932", client.query("SELECT @@character_set_results").first.first
+    assert_equal "cp932", client.query("SELECT @@character_set_connection").first.first
+    assert_equal "cp932_japanese_ci", client.query("SELECT @@collation_connection").first.first
+
+    expected = "こんにちは".encode(Encoding::CP932)
+    assert_equal expected, client.query("SELECT 'こんにちは'").to_a.first.first
+  end
 
   def test_character_encoding_handles_binary_queries
     client = new_tcp_client

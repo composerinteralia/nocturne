@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "digest"
+require_relative "nocturne/charset"
 require_relative "nocturne/connection"
 require_relative "nocturne/error"
 require_relative "nocturne/escaping"
