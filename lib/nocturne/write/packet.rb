@@ -66,8 +66,6 @@ class Nocturne
         end
       end
 
-      MAX_PAYLOAD_LEN = 0xFFFFFF
-
       def finalize_packets
         @length = @buffer.length
         remaining_length = @length - HEADER_LENGTH
@@ -75,10 +73,10 @@ class Nocturne
 
         write_packet_header(packet_start, remaining_length)
 
-        while remaining_length >= MAX_PAYLOAD_LEN
+        while remaining_length >= Protocol::MAX_PAYLOAD_LEN
           @sequence += 1
-          remaining_length -= MAX_PAYLOAD_LEN
-          packet_start += MAX_PAYLOAD_LEN + 4
+          remaining_length -= Protocol::MAX_PAYLOAD_LEN
+          packet_start += Protocol::MAX_PAYLOAD_LEN + 4
 
           @buffer.bytesplice(packet_start, 0, HEADER_PLACEHOLDER)
           write_packet_header(packet_start, remaining_length)
@@ -86,7 +84,7 @@ class Nocturne
       end
 
       def write_packet_header(packet_start, remaining_length)
-        next_payload_length = [remaining_length, MAX_PAYLOAD_LEN].min
+        next_payload_length = [remaining_length, Protocol::MAX_PAYLOAD_LEN].min
         @buffer[packet_start] = (next_payload_length & 0xff).chr
         @buffer[packet_start + 1] = ((next_payload_length >> 8) & 0xff).chr
         @buffer[packet_start + 2] = ((next_payload_length >> 16) & 0xff).chr

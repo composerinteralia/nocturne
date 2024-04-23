@@ -63,14 +63,54 @@ class Nocturne
         @options[:read_timeout] = original_read_timeout
       end
 
+      CAPABILITIES = {
+        # long_password: 1,
+        found_rows: 2,
+        # long_flag: 4,
+        # connect_with_db: 8,
+        # capabilities_no_schema: 0x10,
+        # compress: 0x20,
+        # odbc: 0x40,
+        # local_files: 0x80,
+        # ignore_space: 0x100,
+        protocol_41: 0x200,
+        # interactive: 0x400,
+        ssl: 0x800,
+        transactions: 0x2000,
+        # reserved: 0x4000,
+        secure_connection: 0x8000,
+        # multi_statements: 0x10000,
+        multi_results: 0x20000,
+        # ps_multi_results: 0x40000,
+        plugin_auth: 0x80000,
+        # connect_attrs: 0x100000,
+        # plugin_auth_lenenc_client_data: 0x200000,
+        # can_handle_expired_passwords: 0x400000,
+        session_track: 0x800000,
+        deprecate_eof: 0x1000000
+      }
+      DEFAULT_CAPABILITES = CAPABILITIES[:protocol_41] |
+        CAPABILITIES[:transactions] |
+        CAPABILITIES[:secure_connection] |
+        CAPABILITIES[:multi_results] |
+        CAPABILITIES[:plugin_auth] |
+        CAPABILITIES[:session_track] |
+        CAPABILITIES[:deprecate_eof]
+
+      def capabilities(ssl: false)
+        cap = DEFAULT_CAPABILITES
+        cap |= CAPABILITIES[:ssl] if ssl
+        cap |= CAPABILITIES[:found_rows] if @options[:found_rows]
+        cap
+      end
+
       UNUSED = "\0".b * 23
 
       def ssl_request
         @conn.write_packet do |packet|
-          # TODO don't hardcode all this
-          packet.int32(0x018aaa00) # capabilities (ssl capability set)
-          packet.int32(0xffffff) # max packet size
-          packet.int8(0x2d) # charset
+          packet.int32(capabilities(ssl: true))
+          packet.int32(Protocol::MAX_PAYLOAD_LEN)
+          packet.int8(0x2d) # TODO: charset
           packet.str(UNUSED)
         end
 
@@ -79,10 +119,9 @@ class Nocturne
 
       def client_handshake
         @conn.write_packet do |packet|
-          # TODO don't hardcode all this
-          packet.int32(0x018aa200) # capabilities (ssl capability set)
-          packet.int32(0xffffff) # max packet size
-          packet.int8(0x2d) # charset
+          packet.int32(capabilities)
+          packet.int32(Protocol::MAX_PAYLOAD_LEN)
+          packet.int8(0x2d) # TODO: charset
           packet.str(UNUSED)
 
           packet.nulstr(@options[:username] || "root")

@@ -391,27 +391,27 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_affected_rows_in_found_rows_mode
-  #   client = new_tcp_client(found_rows: true)
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('a', 1)")
-  #
-  #   result_unchanged = client.query("UPDATE nocturne_test SET int_test = 1 WHERE varchar_test = 'a'")
-  #   assert_equal 1, client.affected_rows
-  #
-  #   result_changed = client.query("UPDATE nocturne_test SET int_test = 2 WHERE varchar_test = 'a'")
-  #   assert_equal 1, client.affected_rows
-  #
-  #   result_select = client.query("SELECT int_test FROM nocturne_test WHERE varchar_test = 'a'")
-  #   assert_equal 0, client.affected_rows
-  #
-  #   assert_equal 1, result_unchanged.affected_rows
-  #   assert_equal 1, result_changed.affected_rows
-  #   assert_nil result_select.affected_rows
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_affected_rows_in_found_rows_mode
+    client = new_tcp_client(found_rows: true)
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('a', 1)")
+
+    result_unchanged = client.query("UPDATE nocturne_test SET int_test = 1 WHERE varchar_test = 'a'")
+    assert_equal 1, client.affected_rows
+
+    result_changed = client.query("UPDATE nocturne_test SET int_test = 2 WHERE varchar_test = 'a'")
+    assert_equal 1, client.affected_rows
+
+    result_select = client.query("SELECT int_test FROM nocturne_test WHERE varchar_test = 'a'")
+    assert_equal 0, client.affected_rows
+
+    assert_equal 1, result_unchanged.affected_rows
+    assert_equal 1, result_changed.affected_rows
+    assert_nil result_select.affected_rows
+  ensure
+    ensure_closed client
+  end
 
   def test_nocturne_warning_count
     client = new_tcp_client

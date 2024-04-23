@@ -60,10 +60,8 @@ class Nocturne
         @payload_len == @payload_bytes_read
       end
 
-      MAX_PAYLOAD_LEN = 0xFFFFFF
-
       def continues?
-        @payload_len == MAX_PAYLOAD_LEN
+        @payload_len == Protocol::MAX_PAYLOAD_LEN
       end
 
       def payload

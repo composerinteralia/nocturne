@@ -7,6 +7,8 @@ class Nocturne
     COM_QUERY = 3
     COM_PING = 14
 
+    MAX_PAYLOAD_LEN = 0xFFFFFF
+
     def self.error(packet, klass)
       code, message = read_error(packet)
       klass.new("#{code}: #{message}", code)
