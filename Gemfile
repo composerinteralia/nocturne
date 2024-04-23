@@ -12,4 +12,5 @@ group :benchmark do
   gem "benchmark-ips"
   gem "stackprof"
   gem "trilogy"
+  gem "vernier"
 end

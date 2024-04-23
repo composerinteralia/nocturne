@@ -64,16 +64,26 @@ n.query(<<-SQL)
   )
 SQL
 
+ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
+
 case ARGV[0]
-when "stackprof"
-  require "stackprof"
-  StackProf.run(mode: :wall, out: "./tmp/stackprof-query") do
+when "vernier"
+  require "vernier"
+
+  Vernier.run(out: "./tmp/profile-query.json") do
     50000.times do
       n.query("SELECT * from nocturne_test")
     end
   end
 
-  ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
+when "stackprof"
+  require "stackprof"
+
+  StackProf.run(mode: :wall, out: "./tmp/stackprof-query") do
+    50000.times do
+      n.query("SELECT * from nocturne_test")
+    end
+  end
 
   StackProf.run(mode: :wall, out: "./tmp/stackprof-escape") do
     100000.times do
@@ -111,7 +121,19 @@ else
   t = Trilogy.new
   t.change_db("trilogy_test")
 
-  ESCAPE_STR = "abc\\'def\\\"ghi\\0jkl%mno"
+  puts "Benchmarking #query\n"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.query("SELECT * FROM nocturne_test")
+    end
+
+    bm.report("nocturne") do
+      n.query("SELECT * FROM nocturne_test")
+    end
+
+    bm.compare!
+  end
 
   puts "Benchmarking #escape\n"
 
@@ -122,20 +144,6 @@ else
 
     bm.report("nocturne") do
       n.escape(ESCAPE_STR)
-    end
-
-    bm.compare!
-  end
-
-  puts "Benchmarking #query\n"
-
-  Benchmark.ips do |bm|
-    bm.report("trilogy") do
-      t.query("SELECT * FROM nocturne_test")
-    end
-
-    bm.report("nocturne") do
-      n.query("SELECT * FROM nocturne_test")
     end
 
     bm.compare!

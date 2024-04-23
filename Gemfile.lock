@@ -55,6 +55,7 @@ GEM
       rubocop-performance (~> 1.20.2)
     trilogy (2.8.0)
     unicode-display_width (2.5.0)
+    vernier (0.7.0)
 
 PLATFORMS
   ruby
@@ -68,6 +69,7 @@ DEPENDENCIES
   stackprof
   standard
   trilogy
+  vernier
 
 BUNDLED WITH
    2.5.4
