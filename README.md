@@ -5,7 +5,7 @@ https://github.com/trilogy-libraries/trilogy
 
 ## TODO
 
-- Multi-statement and multi-result
+- Multi-result
 - caching_sha2_password auth
 - SSL options
 - Charset option and more encodings
