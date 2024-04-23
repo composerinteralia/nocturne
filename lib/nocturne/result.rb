@@ -2,11 +2,13 @@ class Nocturne
   class Result
     include Enumerable
 
-    attr_reader :fields, :rows
+    attr_reader :fields, :rows, :affected_rows, :last_insert_id
 
-    def initialize(fields, rows)
+    def initialize(fields, rows, conn)
       @fields = fields
       @rows = rows
+      @affected_rows = conn.affected_rows
+      @last_insert_id = conn.last_insert_id
     end
 
     def each(&bk)

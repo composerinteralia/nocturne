@@ -10,8 +10,7 @@ https://github.com/trilogy-libraries/trilogy
 - Capabilities exchange
 - SSL options
 - Charset option and more encodings
-- #connected_host, #connection_options, #query_with_flags, #set_server_option, #server_info
-- #last_insert_id, #affected_rows, #warnings, #in_transaction, #gtid
+- #connected_host, #connection_options, #query_with_flags, #set_server_option, #server_info, #in_transaction, #gtid
 - Lots of error handling
 
 ## Installation

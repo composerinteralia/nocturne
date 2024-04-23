@@ -69,7 +69,7 @@ class Nocturne
       @status_flags = status_flags
       @warnings = warnings
       @affected_rows = affected_rows
-      @last_insert_id = nil
+      @last_insert_id = last_insert_id
     end
 
     def upgrade

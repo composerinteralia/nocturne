@@ -346,51 +346,51 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_last_insert_id
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   client.query "TRUNCATE nocturne_test"
-  #   result_a = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
-  #   assert result_a
-  #   assert_equal 1, client.last_insert_id
-  #
-  #   result_b = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('b')"
-  #   assert result_b
-  #   assert_equal 2, client.last_insert_id
-  #
-  #   result_select = client.query("SELECT varchar_test FROM nocturne_test")
-  #   assert_equal 0, client.last_insert_id
-  #
-  #   assert_equal 1, result_a.last_insert_id
-  #   assert_equal 2, result_b.last_insert_id
-  #   assert_nil result_select.last_insert_id
-  # ensure
-  #   ensure_closed client
-  # end
-  #
-  # def test_nocturne_affected_rows
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('a', 1)")
-  #
-  #   result_unchanged = client.query("UPDATE nocturne_test SET int_test = 1 WHERE varchar_test = 'a'")
-  #   assert_equal 0, client.affected_rows
-  #
-  #   result_changed = client.query("UPDATE nocturne_test SET int_test = 2 WHERE varchar_test = 'a'")
-  #   assert_equal 1, client.affected_rows
-  #
-  #   result_select = client.query("SELECT int_test FROM nocturne_test WHERE varchar_test = 'a'")
-  #   assert_equal 0, client.affected_rows
-  #
-  #   assert_equal 0, result_unchanged.affected_rows
-  #   assert_equal 1, result_changed.affected_rows
-  #   assert_nil result_select.affected_rows
-  # ensure
-  #   ensure_closed client
-  # end
-  #
+  def test_nocturne_last_insert_id
+    client = new_tcp_client
+    create_test_table(client)
+
+    client.query "TRUNCATE nocturne_test"
+    result_a = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
+    assert result_a
+    assert_equal 1, client.last_insert_id
+
+    result_b = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('b')"
+    assert result_b
+    assert_equal 2, client.last_insert_id
+
+    result_select = client.query("SELECT varchar_test FROM nocturne_test")
+    assert_equal 0, client.last_insert_id
+
+    assert_equal 1, result_a.last_insert_id
+    assert_equal 2, result_b.last_insert_id
+    assert_nil result_select.last_insert_id
+  ensure
+    ensure_closed client
+  end
+
+  def test_nocturne_affected_rows
+    client = new_tcp_client
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (varchar_test, int_test) VALUES ('a', 1)")
+
+    result_unchanged = client.query("UPDATE nocturne_test SET int_test = 1 WHERE varchar_test = 'a'")
+    assert_equal 0, client.affected_rows
+
+    result_changed = client.query("UPDATE nocturne_test SET int_test = 2 WHERE varchar_test = 'a'")
+    assert_equal 1, client.affected_rows
+
+    result_select = client.query("SELECT int_test FROM nocturne_test WHERE varchar_test = 'a'")
+    assert_equal 0, client.affected_rows
+
+    assert_equal 0, result_unchanged.affected_rows
+    assert_equal 1, result_changed.affected_rows
+    assert_nil result_select.affected_rows
+  ensure
+    ensure_closed client
+  end
+
   # def test_nocturne_affected_rows_in_found_rows_mode
   #   client = new_tcp_client(found_rows: true)
   #   create_test_table(client)
@@ -413,26 +413,26 @@ class ClientTest < NocturneTest
   #   ensure_closed client
   # end
 
-  # def test_nocturne_warning_count
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   result = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
-  #   assert result
-  #   assert_equal 0, client.warning_count
-  #
-  #   result = client.query "SELECT 1 + 2"
-  #   assert result
-  #   assert_equal 0, client.warning_count
-  #
-  #   # this field is only 10 characters wide
-  #   longer_val = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  #   result = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('#{longer_val}')"
-  #   assert result
-  #   assert_equal 1, client.warning_count
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_warning_count
+    client = new_tcp_client
+    create_test_table(client)
+
+    result = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
+    assert result
+    assert_equal 0, client.warning_count
+
+    result = client.query "SELECT 1 + 2"
+    assert result
+    assert_equal 0, client.warning_count
+
+    # this field is only 10 characters wide
+    longer_val = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    result = client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('#{longer_val}')"
+    assert result
+    assert_equal 1, client.warning_count
+  ensure
+    ensure_closed client
+  end
 
   def test_nocturne_close_twice_succeeds
     client = new_tcp_client

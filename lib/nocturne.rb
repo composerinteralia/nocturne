@@ -101,6 +101,18 @@ class Nocturne
     @conn.closed?
   end
 
+  def affected_rows
+    @conn.affected_rows || 0
+  end
+
+  def last_insert_id
+    @conn.last_insert_id || 0
+  end
+
+  def warning_count
+    @conn.warnings
+  end
+
   private
 
   def connect

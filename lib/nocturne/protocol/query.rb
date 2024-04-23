@@ -40,7 +40,7 @@ class Nocturne
         @columns = read_columns(column_count)
         fields = @columns.map(&:first)
         rows = read_rows(column_count)
-        Result.new(fields, rows)
+        Result.new(fields, rows, @conn)
       end
 
       private
