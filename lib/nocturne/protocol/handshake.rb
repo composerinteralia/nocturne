@@ -67,7 +67,7 @@ class Nocturne
         # long_password: 1,
         found_rows: 2,
         # long_flag: 4,
-        # connect_with_db: 8,
+        connect_with_db: 8,
         # capabilities_no_schema: 0x10,
         # compress: 0x20,
         # odbc: 0x40,
@@ -99,8 +99,9 @@ class Nocturne
 
       def capabilities(ssl: false)
         cap = DEFAULT_CAPABILITES
-        cap |= CAPABILITIES[:ssl] if ssl
         cap |= CAPABILITIES[:found_rows] if @options[:found_rows]
+        cap |= CAPABILITIES[:connect_with_db] if @options[:database]
+        cap |= CAPABILITIES[:ssl] if ssl
         cap
       end
 
@@ -133,6 +134,7 @@ class Nocturne
             packet.int8(0)
           end
 
+          packet.nulstr(@options[:database]) if @options[:database]
           packet.nulstr(@auth_plugin_name)
         end
       end

@@ -45,7 +45,6 @@ class Nocturne
     @options = options
     @query_flags = QUERY_FLAGS_CAST
     connect
-    change_db(options[:database]) if options[:database]
   end
 
   def change_db(db)
