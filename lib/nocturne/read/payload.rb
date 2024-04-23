@@ -123,6 +123,10 @@ class Nocturne
       def err?
         @payload.getbyte(0) == 0xFF
       end
+
+      def tag
+        @payload.getbyte(0)
+      end
     end
   end
 end

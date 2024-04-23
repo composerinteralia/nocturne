@@ -2,8 +2,6 @@ require "test_helper"
 
 class AuthTest < NocturneTest
   def has_caching_sha2?
-    skip("haven't implemented this yet")
-
     server_version = new_tcp_client.server_version
     server_version.split(".", 2)[0].to_i >= 8
   end
@@ -64,7 +62,6 @@ class AuthTest < NocturneTest
       new_tcp_client options
     end
 
-    assert_includes err.message, "TRILOGY_UNSUPPORTED"
     assert_includes err.message, "caching_sha2_password requires either TCP with TLS or a unix socket"
   end
 

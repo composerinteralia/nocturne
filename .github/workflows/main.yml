@@ -22,6 +22,7 @@ jobs:
       mysql:
         image: mysql:${{ matrix.mysql }}
         env:
+          MYSQL_VERSION: ${{ matrix.mysql }}
           MYSQL_DATABASE: trilogy_test
           MYSQL_USER: test_user
           MYSQL_PASS: test_pass
@@ -36,10 +37,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up MySQL users
+    - name: Set up MySQL
       run:  |
-        mysql --user=root --host=127.0.0.1 < ${{ github.workspace }}/test/mysql/native_user.sql
         mysql --user=root --host=127.0.0.1 --execute 'CREATE DATABASE test'
+        mysql --user=root --host=127.0.0.1 < ${{ github.workspace }}/test/mysql/native_user.sql
+        mysql --user=root --host=127.0.0.1 < ${{ github.workspace }}/test/mysql/caching_sha2_user.sql
 
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1

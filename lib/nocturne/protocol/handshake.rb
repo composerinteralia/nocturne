@@ -14,26 +14,7 @@ class Nocturne
         server_handshake
         ssl_request if @options[:ssl_mode]
         client_handshake
-
-        @conn.read_packet do |packet|
-          if packet.ok?
-            packet.skip(1)
-            @conn.update_status(
-              affected_rows: packet.lenenc_int,
-              last_insert_id: packet.lenenc_int,
-              status_flags: packet.int16,
-              warnings: packet.int16
-            )
-          elsif packet.err?
-            raise Protocol.error(packet, ConnectionError)
-          elsif packet.int8 == 0xFE # auth switch
-            plugin = packet.nulstr
-            data = packet.eof_str
-            auth_switch(plugin, data)
-          else
-            raise "unkwown packet"
-          end
-        end
+        auth_response
       end
 
       private
@@ -116,15 +97,48 @@ class Nocturne
 
           packet.nulstr(@options[:username] || "root")
 
-          if @auth_plugin_name == "mysql_native_password" && password?
-            packet.int8(20)
-            packet.str(mysql_native_password(@auth_plugin_data))
+          authdata = if @auth_plugin_name == "mysql_native_password" && password?
+            mysql_native_password(@auth_plugin_data)
+          elsif @auth_plugin_name == "caching_sha2_password" && password?
+            caching_sha2_password(@auth_plugin_data)
           else
-            packet.int8(0)
+            ""
           end
+
+          packet.int8(authdata.length)
+          packet.str(authdata)
 
           packet.nulstr(@options[:database]) if @options[:database]
           packet.nulstr(@auth_plugin_name)
+        end
+      end
+
+      AUTH_SWITCH = 0xFE
+      AUTH_MORE_DATA = 1
+
+      def auth_response
+        @conn.read_packet do |packet|
+          if packet.ok?
+            packet.skip(1)
+            @conn.update_status(
+              affected_rows: packet.lenenc_int,
+              last_insert_id: packet.lenenc_int,
+              status_flags: packet.int16,
+              warnings: packet.int16
+            )
+          elsif packet.err?
+            raise Protocol.error(packet, ConnectionError)
+          elsif packet.tag == AUTH_SWITCH
+            packet.skip(1)
+            plugin = packet.nulstr
+            data = packet.eof_str
+            auth_switch(plugin, data)
+          elsif packet.tag == AUTH_MORE_DATA
+            packet.skip(1)
+            auth_more_data(packet)
+          else
+            raise "unkwown packet"
+          end
         end
       end
 
@@ -133,6 +147,8 @@ class Nocturne
           case plugin
           when "mysql_native_password"
             packet.str(mysql_native_password(data)) if password?
+          when "caching_sha2_password"
+            packet.str(caching_sha2_password(data)) if password?
           when "mysql_clear_password"
             raise AuthPluginError, "cleartext plugin not enabled" unless @options[:enable_cleartext_plugin]
             packet.str(@options[:password]) if password?
@@ -141,8 +157,40 @@ class Nocturne
           end
         end
 
-        @conn.read_packet do |payload|
-          raise Protocol.error(payload, ConnectionError) if payload.err?
+        auth_response
+      end
+
+      FAST_OK = 3
+      FAST_FAIL = 4
+
+      def auth_more_data(packet)
+        if !@options[:ssl] && !@options[:socket]
+          raise ConnectionError, "caching_sha2_password requires either TCP with TLS or a unix socket"
+        end
+
+        case packet.int8
+        when FAST_FAIL
+          @conn.write_packet do |packet|
+            packet.nulstr(@options[:password])
+          end
+        when FAST_OK
+          # Nothing to do
+        else
+          raise "unexpected packet"
+        end
+
+        @conn.read_packet do |packet|
+          if packet.ok?
+            packet.skip(1)
+            @conn.update_status(
+              affected_rows: packet.lenenc_int,
+              last_insert_id: packet.lenenc_int,
+              status_flags: packet.int16,
+              warnings: packet.int16
+            )
+          elsif packet.err?
+            raise Protocol.error(packet, ConnectionError)
+          end
         end
       end
 
@@ -155,6 +203,19 @@ class Nocturne
         password_digest = Digest::SHA1.digest(@options[:password] || "")
         password_double_digest = Digest::SHA1.digest(password_digest)
         scramble_digest = Digest::SHA1.digest(scramble + password_double_digest)
+
+        bytes = password_digest.length.times.map do |i|
+          password_digest.getbyte(i) ^ scramble_digest.getbyte(i)
+        end
+
+        bytes.pack("C*")
+      end
+
+      def caching_sha2_password(nonce)
+        nonce = nonce.strip!
+        password_digest = Digest::SHA256.digest(@options[:password] || "")
+        password_double_digest = Digest::SHA256.digest(password_digest)
+        scramble_digest = Digest::SHA256.digest(password_double_digest + nonce)
 
         bytes = password_digest.length.times.map do |i|
           password_digest.getbyte(i) ^ scramble_digest.getbyte(i)
