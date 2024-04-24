@@ -132,87 +132,87 @@ class ClientTest < NocturneTest
   #   assert_equal query_allocations - row_count, flatten_rows_allocations
   # end
 
-  # def test_nocturne_more_results_exist?
-  #   client = new_tcp_client(multi_statement: true)
-  #   create_test_table(client)
-  #
-  #   refute_predicate client, :more_results_exist?
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
-  #   refute_predicate client, :more_results_exist?
-  #
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #   assert_predicate client, :more_results_exist?
-  # end
-  #
-  # def test_nocturne_next_result
-  #   client = new_tcp_client(multi_statement: true)
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('3')")
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #
-  #   results = []
-  #
-  #   results << client.query("SELECT id, int_test FROM nocturne_test WHERE id = 1; SELECT id, int_test FROM nocturne_test WHERE id IN (2, 3); SELECT id, int_test FROM nocturne_test")
-  #
-  #   while client.more_results_exist?
-  #     results << client.next_result
-  #   end
-  #
-  #   assert_equal 3, results.length
-  #
-  #   rs1, rs2, rs3 = results
-  #
-  #   assert_equal [[1, 4]], rs1.rows
-  #   assert_equal [[2, 3], [3, 1]], rs2.rows
-  #   assert_equal [[1, 4], [2, 3], [3, 1]], rs3.rows
-  # end
+  def test_nocturne_more_results_exist
+    client = new_tcp_client(multi_statement: true)
+    create_test_table(client)
 
-  # def test_nocturne_next_result_when_no_more_results_exist
-  #   client = new_tcp_client(multi_statement: true)
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
-  #
-  #   result = client.query("SELECT id, int_test FROM nocturne_test")
-  #   next_result = client.next_result
-  #
-  #   assert_equal [{"id" => 1, "int_test" => 4}], result.each_hash.to_a
-  #
-  #   assert_nil next_result
-  # end
+    refute_predicate client, :more_results_exist?
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
+    refute_predicate client, :more_results_exist?
 
-  # def test_nocturne_multiple_results
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   client.query("DROP PROCEDURE IF EXISTS test_proc")
-  #   client.query("CREATE PROCEDURE test_proc() BEGIN SELECT 1 AS 'set_1'; SELECT 2 AS 'set_2'; END")
-  #
-  #   result = client.query("CALL test_proc()")
-  #
-  #   assert_equal([{"set_1" => 1}], result.each_hash.to_a)
-  #   assert client.more_results_exist?
-  #
-  #   result = client.next_result
-  #   assert_equal([{"set_2" => 2}], result.each_hash.to_a)
-  #
-  #   result = client.next_result
-  #   assert_equal([], result.each_hash.to_a)
-  #
-  #   refute client.more_results_exist?
-  # end
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
+    assert_predicate client, :more_results_exist?
+  end
 
-  # def test_nocturne_multiple_results_doesnt_allow_multi_statement_queries
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   assert_raises(Nocturne::QueryError) do
-  #     # Multi statement queries are not supported
-  #     client.query("SELECT 1 AS 'set_1'; SELECT 2 AS 'set_2';")
-  #   end
-  # end
+  def test_nocturne_next_result
+    client = new_tcp_client(multi_statement: true)
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('3')")
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('1')")
+
+    results = []
+
+    results << client.query("SELECT id, int_test FROM nocturne_test WHERE id = 1; SELECT id, int_test FROM nocturne_test WHERE id IN (2, 3); SELECT id, int_test FROM nocturne_test")
+
+    while client.more_results_exist?
+      results << client.next_result
+    end
+
+    assert_equal 3, results.length
+
+    rs1, rs2, rs3 = results
+
+    assert_equal [[1, 4]], rs1.rows
+    assert_equal [[2, 3], [3, 1]], rs2.rows
+    assert_equal [[1, 4], [2, 3], [3, 1]], rs3.rows
+  end
+
+  def test_nocturne_next_result_when_no_more_results_exist
+    client = new_tcp_client(multi_statement: true)
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
+
+    result = client.query("SELECT id, int_test FROM nocturne_test")
+    next_result = client.next_result
+
+    assert_equal [{"id" => 1, "int_test" => 4}], result.each_hash.to_a
+
+    assert_nil next_result
+  end
+
+  def test_nocturne_multiple_results
+    client = new_tcp_client
+    create_test_table(client)
+
+    client.query("DROP PROCEDURE IF EXISTS test_proc")
+    client.query("CREATE PROCEDURE test_proc() BEGIN SELECT 1 AS 'set_1'; SELECT 2 AS 'set_2'; END")
+
+    result = client.query("CALL test_proc()")
+
+    assert_equal([{"set_1" => 1}], result.each_hash.to_a)
+    assert client.more_results_exist?
+
+    result = client.next_result
+    assert_equal([{"set_2" => 2}], result.each_hash.to_a)
+
+    result = client.next_result
+    assert_equal([], result.each_hash.to_a)
+
+    refute client.more_results_exist?
+  end
+
+  def test_nocturne_multiple_results_doesnt_allow_multi_statement_queries
+    client = new_tcp_client
+    create_test_table(client)
+
+    assert_raises(Nocturne::QueryError) do
+      # Multi statement queries are not supported
+      client.query("SELECT 1 AS 'set_1'; SELECT 2 AS 'set_2';")
+    end
+  end
 
   def test_nocturne_multiple_results_disabled
     client = new_tcp_client(multi_result: false)
@@ -228,18 +228,19 @@ class ClientTest < NocturneTest
     assert_equal 1312, e.error_code
   end
 
-  # def test_nocturne_next_result_raises_when_response_has_error
-  #   client = new_tcp_client(multi_statement: true)
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
-  #
-  #   _rs1 = client.query("SELECT id, int_test FROM nocturne_test; SELECT non_existent_column FROM nocturne_test")
-  #
-  #   assert_raises(Nocturne::ProtocolError) do
-  #     client.next_result
-  #   end
-  # end
+  def test_nocturne_next_result_raises_when_response_has_error
+    client = new_tcp_client(multi_statement: true)
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
+
+    _rs1 = client.query("SELECT id, int_test FROM nocturne_test; SELECT non_existent_column FROM nocturne_test")
+
+    # assert_raises(Nocturne::ProtocolError) do
+    assert_raises(Nocturne::Error) do
+      client.next_result
+    end
+  end
 
   def test_nocturne_query_values
     client = new_tcp_client

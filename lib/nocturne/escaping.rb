@@ -13,8 +13,6 @@ class Nocturne
     }
     SINGLE_QUOTE = "'".ord
 
-    SERVER_STATUS_NO_BACKSLASH_ESCAPES = 0x0200
-
     def escape(str)
       encoding = str.encoding
 
@@ -30,7 +28,7 @@ class Nocturne
       while i < j
         byte = str.getbyte(i)
 
-        if (@conn.status_flags & SERVER_STATUS_NO_BACKSLASH_ESCAPES).zero?
+        if !@conn.status_flag?(Protocol::SERVER_STATUS_NO_BACKSLASH_ESCAPES)
           if (escaped = ESCAPES[byte])
             res.bytesplice(pos, 0, "\\")
             pos += 1

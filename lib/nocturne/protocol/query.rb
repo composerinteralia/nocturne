@@ -20,6 +20,10 @@ class Nocturne
           packet.str(sql)
         end
 
+        next_result
+      end
+
+      def next_result
         column_count = 0
         @conn.read_packet do |packet|
           if packet.ok?

@@ -112,6 +112,15 @@ class Nocturne
     @conn.warnings
   end
 
+  def more_results_exist?
+    @conn.status_flag?(Protocol::SERVER_STATUS_MORE_RESULTS_EXIST)
+  end
+
+  def next_result
+    return unless more_results_exist?
+    Protocol::Query.new(@conn, @options, @query_flags).next_result
+  end
+
   private
 
   def connect

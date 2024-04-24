@@ -72,6 +72,10 @@ class Nocturne
       @last_insert_id = last_insert_id
     end
 
+    def status_flag?(flag)
+      !(status_flags & flag).zero?
+    end
+
     def upgrade
       @sock = @sock.ssl_sock
     end
