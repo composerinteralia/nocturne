@@ -124,6 +124,10 @@ class Nocturne
     @conn.status_flag?(Protocol::SERVER_STATUS_MORE_RESULTS_EXIST)
   end
 
+  def in_transaction?
+    @conn.status_flag?(Protocol::SERVER_STATUS_IN_TRANS)
+  end
+
   def next_result
     return unless more_results_exist?
     Protocol::Query.new(@conn, @options, @query_flags).next_result

@@ -745,16 +745,16 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_in_transaction_status
-  #   client = new_tcp_client
-  #   assert !client.in_transaction?
-  #   client.query "START TRANSACTION"
-  #   assert client.in_transaction?
-  #   client.query "COMMIT"
-  #   assert !client.in_transaction?
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_in_transaction_status
+    client = new_tcp_client
+    assert !client.in_transaction?
+    client.query "START TRANSACTION"
+    assert client.in_transaction?
+    client.query "COMMIT"
+    assert !client.in_transaction?
+  ensure
+    ensure_closed client
+  end
 
   def test_server_version
     client = new_tcp_client
