@@ -35,7 +35,7 @@ class Nocturne
         written += @sock.sendmsg(data)
       end
 
-      @next_sequence = @write.sequence + 1
+      @next_sequence = (@write.sequence + 1) % 256
     ensure
       @write.reset
     end
@@ -57,7 +57,7 @@ class Nocturne
         end
 
         raise "sequence out of order" if @read.sequence != @next_sequence
-        @next_sequence = @read.sequence + 1
+        @next_sequence = (@read.sequence + 1) % 256
 
         break unless @read.continues?
       end
