@@ -68,6 +68,14 @@ class Nocturne
     Protocol::Query.new(@conn, @options, @query_flags).query(sql)
   end
 
+  def query_with_flags(sql, flags)
+    before_flags = @query_flags
+    @query_flags = flags
+    query(sql)
+  ensure
+    @query_flags = before_flags
+  end
+
   def ping
     @conn.begin_command
 

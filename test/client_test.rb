@@ -258,19 +258,19 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_query_values_with_flags
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('3')")
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #
-  #   result = client.query_with_flags("SELECT id, int_test FROM nocturne_test", client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS)
-  #
-  #   assert_equal ["id", "int_test"], result.fields
-  #   assert_equal [1, 4, 2, 3, 3, 1], result.rows
-  # end
+  def test_nocturne_query_values_with_flags
+    client = new_tcp_client
+    create_test_table(client)
+
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4')")
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('3')")
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('1')")
+
+    result = client.query_with_flags("SELECT id, int_test FROM nocturne_test", client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS)
+
+    assert_equal ["id", "int_test"], result.fields
+    assert_equal [1, 4, 2, 3, 3, 1], result.rows
+  end
 
   # def test_nocturne_set_server_option
   #   client = new_tcp_client

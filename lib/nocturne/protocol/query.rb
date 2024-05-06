@@ -98,7 +98,11 @@ class Nocturne
               break
             end
 
-            rows << read_row(column_count, row)
+            if (@flags & QUERY_FLAGS_FLATTEN_ROWS).zero?
+              rows << read_row(column_count, row)
+            else
+              rows += read_row(column_count, row)
+            end
           end
         end
 
