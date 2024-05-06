@@ -99,9 +99,9 @@ class Nocturne
             end
 
             if (@flags & QUERY_FLAGS_FLATTEN_ROWS).zero?
-              rows << read_row(column_count, row)
+              rows << read_row(column_count, row, [])
             else
-              rows += read_row(column_count, row)
+              read_row(column_count, row, rows)
             end
           end
         end
@@ -125,8 +125,7 @@ class Nocturne
       YEAR = 0x0d
       NEWDECIMAL = 0xf6
 
-      def read_row(column_count, row)
-        result = []
+      def read_row(column_count, row, result)
         i = 0
 
         while i < column_count

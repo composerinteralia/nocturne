@@ -119,18 +119,18 @@ class ClientTest < NocturneTest
     ensure_closed client
   end
 
-  # def test_nocturne_query_values_vs_query_allocations
-  #   client = new_tcp_client
-  #   client.query_with_flags("SELECT 1", client.query_flags) # warm up
-  #
-  #   row_count = 1000
-  #   sql = (1..row_count).map { |i| "SELECT #{i}" }.join(" UNION ")
-  #
-  #   query_allocations = allocations { client.query_with_flags(sql, client.query_flags) }
-  #   flatten_rows_allocations = allocations { client.query_with_flags(sql, client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS) }
-  #
-  #   assert_equal query_allocations - row_count, flatten_rows_allocations
-  # end
+  def test_nocturne_query_values_vs_query_allocations
+    client = new_tcp_client
+    client.query_with_flags("SELECT 1", client.query_flags) # warm up
+
+    row_count = 1000
+    sql = (1..row_count).map { |i| "SELECT #{i}" }.join(" UNION ")
+
+    query_allocations = allocations { client.query_with_flags(sql, client.query_flags) }
+    flatten_rows_allocations = allocations { client.query_with_flags(sql, client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS) }
+
+    assert_equal query_allocations - row_count, flatten_rows_allocations
+  end
 
   def test_nocturne_more_results_exist
     client = new_tcp_client(multi_statement: true)
