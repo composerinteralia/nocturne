@@ -5,9 +5,10 @@ https://github.com/trilogy-libraries/trilogy
 
 ## TODO
 
+- #gtid
 - SSL options
 - Charset option and more encodings
-- #set_server_option, #gtid
+- Better handling of capabilities
 - Lots of error handling
 
 ## Installation

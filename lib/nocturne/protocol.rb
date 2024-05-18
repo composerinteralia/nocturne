@@ -6,6 +6,7 @@ class Nocturne
     COM_INIT_DB = 2
     COM_QUERY = 3
     COM_PING = 14
+    COM_SET_OPTION = 27
 
     SERVER_STATUS_IN_TRANS = 1
     SERVER_STATUS_AUTOCOMMIT = 2

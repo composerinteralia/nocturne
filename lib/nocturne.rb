@@ -38,6 +38,9 @@ class Nocturne
   QUERY_FLAGS_FLATTEN_ROWS = 8
   QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS = 16
 
+  SET_SERVER_MULTI_STATEMENTS_ON = 0
+  SET_SERVER_MULTI_STATEMENTS_OFF = 1
+
   attr_reader :server_version, :connection_options
   attr_accessor :query_flags
 
@@ -90,6 +93,19 @@ class Nocturne
     end
 
     true
+  end
+
+  def set_server_option(option)
+    @conn.begin_command
+
+    @conn.write_packet do |packet|
+      packet.int8(Protocol::COM_SET_OPTION)
+      packet.int32(option)
+    end
+
+    @conn.read_packet do |payload|
+      raise Protocol.error(payload, Error) if payload.err?
+    end
   end
 
   def close

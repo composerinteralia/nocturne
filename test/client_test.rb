@@ -272,56 +272,56 @@ class ClientTest < NocturneTest
     assert_equal [1, 4, 2, 3, 3, 1], result.rows
   end
 
-  # def test_nocturne_set_server_option
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_ON)
-  #   client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_OFF)
-  # end
+  def test_nocturne_set_server_option
+    client = new_tcp_client
+    create_test_table(client)
 
-  # def test_nocturne_set_server_option_with_invalid_option
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   e = assert_raises do
-  #     client.set_server_option(42)
-  #   end
-  #
-  #   assert_instance_of(Nocturne::ProtocolError, e)
-  #   assert_match(/1047: Unknown command/, e.message)
-  # end
+    client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_ON)
+    client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_OFF)
+  end
 
-  # def test_nocturne_set_server_option_multi_statement
-  #   # Start with multi_statement disabled, enable it during connection
-  #   client = new_tcp_client
-  #   create_test_table(client)
-  #
-  #   e = assert_raises do
-  #     client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #   end
-  #
-  #   assert_instance_of(Nocturne::QueryError, e)
-  #   assert_match(/1064: You have an error in your SQL syntax/, e.message)
-  #
-  #   client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_ON)
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #   client.next_result while client.more_results_exist?
-  #
-  #   # Start with multi_statement enabled, disable it during connection
-  #   client = new_tcp_client(multi_statement: true)
-  #   create_test_table(client)
-  #   client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #   client.next_result while client.more_results_exist?
-  #   client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_OFF)
-  #
-  #   e = assert_raises do
-  #     client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
-  #   end
-  #
-  #   assert_instance_of(Nocturne::QueryError, e)
-  #   assert_match(/1064: You have an error in your SQL syntax/, e.message)
-  # end
+  def test_nocturne_set_server_option_with_invalid_option
+    client = new_tcp_client
+    create_test_table(client)
+
+    e = assert_raises do
+      client.set_server_option(42)
+    end
+
+    # assert_instance_of(Nocturne::ProtocolError, e)
+    assert_match(/1047: Unknown command/, e.message)
+  end
+
+  def test_nocturne_set_server_option_multi_statement
+    # Start with multi_statement disabled, enable it during connection
+    client = new_tcp_client
+    create_test_table(client)
+
+    e = assert_raises do
+      client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
+    end
+
+    assert_instance_of(Nocturne::QueryError, e)
+    assert_match(/1064: You have an error in your SQL syntax/, e.message)
+
+    client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_ON)
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
+    client.next_result while client.more_results_exist?
+
+    # Start with multi_statement enabled, disable it during connection
+    client = new_tcp_client(multi_statement: true)
+    create_test_table(client)
+    client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
+    client.next_result while client.more_results_exist?
+    client.set_server_option(Nocturne::SET_SERVER_MULTI_STATEMENTS_OFF)
+
+    e = assert_raises do
+      client.query("INSERT INTO nocturne_test (int_test) VALUES ('4'); INSERT INTO nocturne_test (int_test) VALUES ('1')")
+    end
+
+    assert_instance_of(Nocturne::QueryError, e)
+    assert_match(/1064: You have an error in your SQL syntax/, e.message)
+  end
 
   def test_nocturne_query_result_object
     client = new_tcp_client
