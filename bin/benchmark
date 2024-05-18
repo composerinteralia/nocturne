@@ -114,6 +114,97 @@ when "objects"
     diff = ObjectSpace.count_objects.map { |k, v| [k, v - before[k]] }
     p diff.to_h
   end
+when "escaping"
+  require 'trilogy'
+  require 'benchmark/ips'
+
+  t = Trilogy.new
+  t.change_db("trilogy_test")
+
+  puts "Benchmarking #escape\n"
+
+  p t.escape(ESCAPE_STR)
+  p n.escape(ESCAPE_STR)
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
+  NO_ESCAPE_STR = "abcdefghijklmno"
+
+  puts "Benchmarking no escape"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(NO_ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(NO_ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
+  puts "Benchmarking #escape (no backslash)"
+
+  n.query("SET SQL_MODE=NO_BACKSLASH_ESCAPES")
+  t.query("SET SQL_MODE=NO_BACKSLASH_ESCAPES")
+
+  p t.escape(ESCAPE_STR)
+  p n.escape(ESCAPE_STR)
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
+  puts "Benchmarking #escape (no backslash with lots of single quotes)"
+
+  SINGLE_QUOTE_ESCAPE_STR = "a'b'c'd'e'f'g'''a's'd'f"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(SINGLE_QUOTE_ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(SINGLE_QUOTE_ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
+  puts "Benchmarking no escape (no backslash)"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.escape(NO_ESCAPE_STR)
+    end
+
+    bm.report("nocturne") do
+      n.escape(NO_ESCAPE_STR)
+    end
+
+    bm.compare!
+  end
+
+  t.close
 else
   require 'trilogy'
   require 'benchmark/ips'
@@ -130,20 +221,6 @@ else
 
     bm.report("nocturne") do
       n.query("SELECT * FROM nocturne_test")
-    end
-
-    bm.compare!
-  end
-
-  puts "Benchmarking #escape\n"
-
-  Benchmark.ips do |bm|
-    bm.report("trilogy") do
-      t.escape(ESCAPE_STR)
-    end
-
-    bm.report("nocturne") do
-      n.escape(ESCAPE_STR)
     end
 
     bm.compare!
