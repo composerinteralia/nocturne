@@ -139,6 +139,16 @@ class Nocturne
     @connected_host ||= query_with_flags("select @@hostname", query_flags | QUERY_FLAGS_FLATTEN_ROWS).rows.first
   end
 
+  def server_info
+    version_str = server_version
+
+    if /\A(\d+)\.(\d+)\.(\d+)/ =~ version_str
+      version_num = ($1.to_i * 10000) + ($2.to_i * 100) + $3.to_i
+    end
+
+    { :version => version_str, :id => version_num }
+  end
+
   private
 
   def connect

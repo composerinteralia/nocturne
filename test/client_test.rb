@@ -761,13 +761,13 @@ class ClientTest < NocturneTest
     assert_match %r{\A\d+\.\d+\.\d+}, client.server_version
   end
 
-  # def test_server_info
-  #   client = new_tcp_client
-  #   server_info = client.server_info
-  #
-  #   assert_kind_of 0.class, server_info[:id]
-  #   assert_kind_of String, server_info[:version]
-  # end
+  def test_server_info
+    client = new_tcp_client
+    server_info = client.server_info
+
+    assert_kind_of 0.class, server_info[:id]
+    assert_kind_of String, server_info[:version]
+  end
 
   # def test_connect_by_multiple_names
   #   return skip unless ["127.0.0.1", "localhost"].include?(DEFAULT_HOST)

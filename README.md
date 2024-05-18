@@ -7,7 +7,7 @@ https://github.com/trilogy-libraries/trilogy
 
 - SSL options
 - Charset option and more encodings
-- #set_server_option, #server_info, #gtid
+- #set_server_option, #gtid
 - Lots of error handling
 
 ## Installation
