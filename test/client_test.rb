@@ -1,14 +1,14 @@
 require "test_helper"
 
 class ClientTest < NocturneTest
-  # def test_nocturne_connected_host
-  #   client = new_tcp_client
-  #   # Since this method depends on the hostname of the machine,
-  #   # and therefore isn't constant, we just assert that it's set.
-  #   assert client.connected_host
-  # ensure
-  #   ensure_closed client
-  # end
+  def test_nocturne_connected_host
+    client = new_tcp_client
+    # Since this method depends on the hostname of the machine,
+    # and therefore isn't constant, we just assert that it's set.
+    assert client.connected_host
+  ensure
+    ensure_closed client
+  end
 
   def test_nocturne_connect_tcp
     client = new_tcp_client
@@ -52,20 +52,20 @@ class ClientTest < NocturneTest
     end
   end
 
-  # def test_nocturne_connection_options
-  #   client = new_tcp_client
-  #
-  #   expected_connection_options = {
-  #     host: DEFAULT_HOST,
-  #     port: DEFAULT_PORT,
-  #     username: DEFAULT_USER,
-  #     password: DEFAULT_PASS,
-  #     ssl: true,
-  #     ssl_mode: 4,
-  #     tls_min_version: 3
-  #   }
-  #   assert_equal expected_connection_options, client.connection_options
-  # end
+  def test_nocturne_connection_options
+    client = new_tcp_client
+
+    expected_connection_options = {
+      host: DEFAULT_HOST,
+      port: DEFAULT_PORT,
+      username: DEFAULT_USER,
+      password: DEFAULT_PASS,
+      ssl: true,
+      ssl_mode: 4,
+      tls_min_version: OpenSSL::SSL::TLS1_2_VERSION
+    }
+    assert_equal expected_connection_options, client.connection_options
+  end
 
   def test_nocturne_ping
     client = new_tcp_client

@@ -38,12 +38,14 @@ class Nocturne
   QUERY_FLAGS_FLATTEN_ROWS = 8
   QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS = 16
 
-  attr_reader :server_version
+  attr_reader :server_version, :connection_options
   attr_accessor :query_flags
 
   def initialize(options = {})
+    @connection_options = options.dup.freeze
     @options = options
     @query_flags = QUERY_FLAGS_CAST
+    @connected_host = nil
     connect
   end
 
@@ -131,6 +133,10 @@ class Nocturne
   def next_result
     return unless more_results_exist?
     Protocol::Query.new(@conn, @options, @query_flags).next_result
+  end
+
+  def connected_host
+    @connected_host ||= query_with_flags("select @@hostname", query_flags | QUERY_FLAGS_FLATTEN_ROWS).rows.first
   end
 
   private
