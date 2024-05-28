@@ -7,7 +7,6 @@ https://github.com/trilogy-libraries/trilogy
 
 - #gtid
 - SSL options
-- Charset option and more encodings
 - Better handling of capabilities
 - Lots of error handling
 

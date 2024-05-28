@@ -2,6 +2,7 @@
 
 require "digest"
 require_relative "nocturne/connection"
+require_relative "nocturne/encoding"
 require_relative "nocturne/error"
 require_relative "nocturne/escaping"
 require_relative "nocturne/protocol"
@@ -37,6 +38,7 @@ class Nocturne
   QUERY_FLAGS_LOCAL_TIMEZONE = 4
   QUERY_FLAGS_FLATTEN_ROWS = 8
   QUERY_FLAGS_CAST_ALL_DECIMALS_TO_BIGDECIMALS = 16
+  DEFAULT_QUERY_FLAGS = QUERY_FLAGS_CAST
 
   SET_SERVER_MULTI_STATEMENTS_ON = 0
   SET_SERVER_MULTI_STATEMENTS_OFF = 1
@@ -47,7 +49,9 @@ class Nocturne
   def initialize(options = {})
     @connection_options = options.dup.freeze
     @options = options
-    @query_flags = QUERY_FLAGS_CAST
+    @options[:encoding] ||= "utf8mb4"
+    @encoding = Nocturne::Encoding.find(options[:encoding])
+    @query_flags = DEFAULT_QUERY_FLAGS
     @connected_host = nil
     connect
   end
@@ -70,7 +74,8 @@ class Nocturne
   alias_method :select_db, :change_db
 
   def query(sql)
-    Protocol::Query.new(@conn, @options, @query_flags).query(sql)
+    encoded_sql = Nocturne::Encoding.try_encode(sql, @encoding).b
+    Protocol::Query.new(@conn, @options, @query_flags).query(encoded_sql)
   end
 
   def query_with_flags(sql, flags)
@@ -162,7 +167,7 @@ class Nocturne
       version_num = ($1.to_i * 10000) + ($2.to_i * 100) + $3.to_i
     end
 
-    { :version => version_str, :id => version_num }
+    {version: version_str, id: version_num}
   end
 
   private

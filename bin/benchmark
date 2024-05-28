@@ -212,6 +212,20 @@ else
   t = Trilogy.new
   t.change_db("trilogy_test")
 
+  puts "Benchmarking simple #query\n"
+
+  Benchmark.ips do |bm|
+    bm.report("trilogy") do
+      t.query("SELECT 1")
+    end
+
+    bm.report("nocturne") do
+      n.query("SELECT 1")
+    end
+
+    bm.compare!
+  end
+
   puts "Benchmarking #query\n"
 
   Benchmark.ips do |bm|

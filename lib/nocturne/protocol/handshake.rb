@@ -81,7 +81,7 @@ class Nocturne
         @conn.write_packet do |packet|
           packet.int32(capabilities(ssl: true))
           packet.int32(Protocol::MAX_PAYLOAD_LEN)
-          packet.int8(0x2d) # TODO: charset
+          packet.int8(Nocturne::Encoding.charset(@options[:encoding]))
           packet.str(UNUSED)
         end
 
@@ -92,7 +92,7 @@ class Nocturne
         @conn.write_packet do |packet|
           packet.int32(capabilities)
           packet.int32(Protocol::MAX_PAYLOAD_LEN)
-          packet.int8(0x2d) # TODO: charset
+          packet.int8(Nocturne::Encoding.charset(@options[:encoding]))
           packet.str(UNUSED)
 
           packet.nulstr(@options[:username] || "root")

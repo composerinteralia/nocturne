@@ -120,11 +120,11 @@ class ClientTest < NocturneTest
   end
 
   def test_nocturne_query_values_vs_query_allocations
-    client = new_tcp_client
-    client.query_with_flags("SELECT 1", client.query_flags) # warm up
-
     row_count = 1000
     sql = (1..row_count).map { |i| "SELECT #{i}" }.join(" UNION ")
+
+    client = new_tcp_client
+    client.query_with_flags(sql, client.query_flags) # warm up
 
     query_allocations = allocations { client.query_with_flags(sql, client.query_flags) }
     flatten_rows_allocations = allocations { client.query_with_flags(sql, client.query_flags | Nocturne::QUERY_FLAGS_FLATTEN_ROWS) }
@@ -462,7 +462,7 @@ class ClientTest < NocturneTest
   def test_nocturne_escape_ascii_compat
     client = new_tcp_client
 
-    assert_raises Encoding::CompatibilityError do
+    assert_raises ::Encoding::CompatibilityError do
       client.escape("'\"\\".encode("UTF-16LE"))
     end
   ensure
@@ -1087,24 +1087,24 @@ class ClientTest < NocturneTest
     assert_equal "utf8mb4_general_ci", client.query("SELECT @@collation_connection").first.first
   end
 
-  # def test_bad_character_encoding
-  #   err = assert_raises ArgumentError do
-  #     new_tcp_client(encoding: "invalid")
-  #   end
-  #   assert_equal "Unknown or unsupported encoding: invalid", err.message
-  # end
-  #
-  # def test_character_encoding
-  #   client = new_tcp_client(encoding: "cp932")
-  #
-  #   assert_equal "cp932", client.query("SELECT @@character_set_client").first.first
-  #   assert_equal "cp932", client.query("SELECT @@character_set_results").first.first
-  #   assert_equal "cp932", client.query("SELECT @@character_set_connection").first.first
-  #   assert_equal "cp932_japanese_ci", client.query("SELECT @@collation_connection").first.first
-  #
-  #   expected = "こんにちは".encode(Encoding::CP932)
-  #   assert_equal expected, client.query("SELECT 'こんにちは'").to_a.first.first
-  # end
+  def test_bad_character_encoding
+    err = assert_raises ArgumentError do
+      new_tcp_client(encoding: "invalid")
+    end
+    assert_equal "Unknown or unsupported encoding: invalid", err.message
+  end
+
+  def test_character_encoding
+    client = new_tcp_client(encoding: "cp932")
+
+    assert_equal "cp932", client.query("SELECT @@character_set_client").first.first
+    assert_equal "cp932", client.query("SELECT @@character_set_results").first.first
+    assert_equal "cp932", client.query("SELECT @@character_set_connection").first.first
+    assert_equal "cp932_japanese_ci", client.query("SELECT @@collation_connection").first.first
+
+    expected = "こんにちは".encode(Encoding::CP932)
+    assert_equal expected, client.query("SELECT 'こんにちは'").to_a.first.first
+  end
 
   def test_character_encoding_handles_binary_queries
     client = new_tcp_client
@@ -1118,10 +1118,10 @@ class ClientTest < NocturneTest
     assert_equal expected.dup.force_encoding(Encoding::UTF_8), result
     assert_equal Encoding::UTF_8, result.encoding
 
-    # client = new_tcp_client(encoding: "cp932")
-    # result = client.query("SELECT '#{expected}'").to_a.first.first
-    # assert_equal expected.dup.force_encoding(Encoding::Windows_31J), result
-    # assert_equal Encoding::Windows_31J, result.encoding
+    client = new_tcp_client(encoding: "cp932")
+    result = client.query("SELECT '#{expected}'").to_a.first.first
+    assert_equal expected.dup.force_encoding(Encoding::Windows_31J), result
+    assert_equal Encoding::Windows_31J, result.encoding
   end
 
   def test_connection_options_casting
