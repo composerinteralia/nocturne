@@ -2,7 +2,7 @@
 
 class Nocturne
   class Connection
-    attr_reader :status_flags, :warnings, :affected_rows, :last_insert_id
+    attr_reader :status_flags, :warnings, :affected_rows, :last_insert_id, :last_gtid
 
     def initialize(options)
       @sock = Nocturne::Socket.new(options)
@@ -18,6 +18,7 @@ class Nocturne
       @warnings = nil
       @affected_rows = nil
       @last_insert_id = nil
+      @last_gtid = nil
     end
 
     def begin_command
@@ -62,14 +63,41 @@ class Nocturne
         break unless @read.continues?
       end
 
-      yield @read.payload if block_given?
+      payload = @read.payload
+
+      if payload.ok?
+        payload.skip(1)
+        @affected_rows = payload.lenenc_int
+        @last_insert_id = payload.lenenc_int
+        @status_flags = payload.int16
+        @warnings = payload.int16
+
+        if status_flag?(Protocol::SERVER_STATUS_SESSION_STATE_CHANGED)
+          payload.skip(payload.lenenc_int)
+          payload.int8
+
+          until payload.fully_read?
+            type = payload.int8
+            info = payload.lenenc_str
+
+            if type == Protocol::SESSION_TRACK_GTIDS
+              gtid_payload = Read::Payload.new
+              gtid_payload.fragments = [info]
+              gtid_payload.int8
+              @last_gtid = gtid_payload.lenenc_str
+            end
+          end
+        end
+      end
+
+      yield payload if block_given?
     end
 
-    def update_status(status_flags:, warnings: nil, affected_rows: nil, last_insert_id: nil)
+    def update_status(status_flags:, warnings: nil)
       @status_flags = status_flags
       @warnings = warnings
-      @affected_rows = affected_rows
-      @last_insert_id = last_insert_id
+      @affected_rows = nil
+      @last_insert_id = nil
     end
 
     def status_flag?(flag)

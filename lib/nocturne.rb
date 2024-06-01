@@ -139,6 +139,10 @@ class Nocturne
     @conn.last_insert_id || 0
   end
 
+  def last_gtid
+    @conn.last_gtid
+  end
+
   def warning_count
     @conn.warnings
   end

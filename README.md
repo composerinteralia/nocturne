@@ -5,7 +5,6 @@ https://github.com/trilogy-libraries/trilogy
 
 ## TODO
 
-- #gtid
 - SSL options
 - Better handling of capabilities
 - Lots of error handling

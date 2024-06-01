@@ -119,13 +119,7 @@ class Nocturne
       def auth_response
         @conn.read_packet do |packet|
           if packet.ok?
-            packet.skip(1)
-            @conn.update_status(
-              affected_rows: packet.lenenc_int,
-              last_insert_id: packet.lenenc_int,
-              status_flags: packet.int16,
-              warnings: packet.int16
-            )
+            next
           elsif packet.err?
             raise Protocol.error(packet, ConnectionError)
           elsif packet.tag == AUTH_SWITCH
@@ -180,17 +174,7 @@ class Nocturne
         end
 
         @conn.read_packet do |packet|
-          if packet.ok?
-            packet.skip(1)
-            @conn.update_status(
-              affected_rows: packet.lenenc_int,
-              last_insert_id: packet.lenenc_int,
-              status_flags: packet.int16,
-              warnings: packet.int16
-            )
-          elsif packet.err?
-            raise Protocol.error(packet, ConnectionError)
-          end
+          raise Protocol.error(packet, ConnectionError) if packet.err?
         end
       end
 

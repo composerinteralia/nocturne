@@ -117,11 +117,15 @@ class Nocturne
       end
 
       def ok?
-        @payload.getbyte(0) == 0
+        @payload.getbyte(0) == 0 && @payload.length >= 7
       end
 
       def err?
         @payload.getbyte(0) == 0xFF
+      end
+
+      def fully_read?
+        @pos == @payload.length
       end
 
       def tag

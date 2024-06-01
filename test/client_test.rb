@@ -947,42 +947,46 @@ class ClientTest < NocturneTest
   #   assert_equal client.query("SELECT CONNECTION_ID()").first.first, connection_id
   # end
 
-  # def test_gtid_support
-  #   client = new_tcp_client
-  #
-  #   if client.query("SELECT @@GLOBAL.log_bin").first == [0]
-  #     return skip("bin_log needs to be enabled for GTID support")
-  #   end
-  #
-  #   # Run these in case we're still in OFF mode to go step by step to ON
-  #   client.query "SET GLOBAL server_id = 1"
-  #   begin
-  #     client.query "SET GLOBAL gtid_mode = OFF_PERMISSIVE"
-  #   rescue
-  #     nil
-  #   end
-  #   begin
-  #     client.query "SET GLOBAL gtid_mode = ON_PERMISSIVE"
-  #   rescue
-  #     nil
-  #   end
-  #   client.query "SET GLOBAL enforce_gtid_consistency = ON"
-  #   client.query "SET GLOBAL gtid_mode = ON"
-  #   client.query "SET SESSION session_track_gtids = OWN_GTID"
-  #
-  #   create_test_table(client)
-  #   client.query "TRUNCATE nocturne_test"
-  #
-  #   client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
-  #   last_gtid = client.last_gtid
-  #
-  #   result = client.query "SHOW GLOBAL VARIABLES LIKE 'gtid_executed'"
-  #   gtid_set = result.rows.first[1]
-  #   gtid, set = gtid_set.split(":")
-  #   last = set.split("-").last
-  #
-  #   assert_equal "#{gtid}:#{last}", last_gtid
-  # end
+  def test_gtid_support
+    client = new_tcp_client
+
+    if client.query("SELECT @@GLOBAL.log_bin").first == [0]
+      return skip("bin_log needs to be enabled for GTID support")
+    end
+
+    # Run these in case we're still in OFF mode to go step by step to ON
+    client.query "SET GLOBAL server_id = 1"
+    begin
+      client.query "SET GLOBAL gtid_mode = OFF_PERMISSIVE"
+    rescue
+      nil
+    end
+    begin
+      client.query "SET GLOBAL gtid_mode = ON_PERMISSIVE"
+    rescue
+      nil
+    end
+    client.query "SET GLOBAL enforce_gtid_consistency = ON"
+    client.query "SET GLOBAL gtid_mode = ON"
+    client.query "SET SESSION session_track_gtids = OWN_GTID"
+
+    create_test_table(client)
+    client.query "TRUNCATE nocturne_test"
+
+    client.query "INSERT INTO nocturne_test (varchar_test) VALUES ('a')"
+    last_gtid = client.last_gtid
+
+    result = client.query "SHOW GLOBAL VARIABLES LIKE 'gtid_executed'"
+    gtid_set = result.rows.first[1]
+    gtid, set = gtid_set.split(":")
+    last = set.split("-").last
+
+    assert_equal "#{gtid}:#{last}", last_gtid
+
+    # Additional queries don't clear out the value
+    client.query "SELECT 1"
+    assert_equal last_gtid, client.last_gtid
+  end
 
   # def test_connection_refused
   #   fake_server = TCPServer.new("127.0.0.1", 0)
