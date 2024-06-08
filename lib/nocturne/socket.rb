@@ -44,7 +44,7 @@ class Nocturne
       @sock.close
     end
 
-    def ssl_sock
+    def upgrade
       Nocturne::SSLSocket.new(@sock, @options)
     end
 
@@ -69,6 +69,8 @@ class Nocturne
       @sock.connect
       @select_sock = [@sock]
       @options = options
+    rescue OpenSSL::SSL::SSLError => e
+      raise Nocturne::SSLError, e.message
     end
 
     def recv(buffer)
@@ -83,6 +85,8 @@ class Nocturne
           return result
         end
       end
+    rescue OpenSSL::SSL::SSLError => e
+      raise Nocturne::SSLError, e.message
     end
 
     def sendmsg(data)
@@ -97,6 +101,8 @@ class Nocturne
           return result
         end
       end
+    rescue OpenSSL::SSL::SSLError => e
+      raise Nocturne::SSLError, e.message
     end
 
     def close
@@ -111,6 +117,19 @@ class Nocturne
       ctx.max_version = options[:tls_max_version]
       ctx.ciphersuites = options[:tls_ciphersuites]
       ctx.ciphers = options[:ssl_cipher]
+
+      case options[:ssl_mode]
+      when SSL_VERIFY_IDENTITY
+        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        ctx.verify_hostname = true
+      when SSL_VERIFY_CA
+        ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        ctx.verify_hostname = false
+      when SSL_REQUIRED_NOVERIFY, SSL_PREFERRED_NOVERIFY
+        ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        ctx.verify_hostname = false
+      end
+
       ctx
     end
   end

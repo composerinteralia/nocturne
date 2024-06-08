@@ -19,9 +19,15 @@ class Nocturne
   class ConnectionClosed < ConnectionError
   end
 
+  class EOFError < ConnectionError
+  end
+
   class QueryError < Error
   end
 
   class TimeoutError < Error
+  end
+
+  class SSLError < Error
   end
 end
