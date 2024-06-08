@@ -3,12 +3,6 @@
 A pure-Ruby client library for MySQL-compatible database servers, inspired by
 https://github.com/trilogy-libraries/trilogy
 
-## TODO
-
-- SSL options
-- Better handling of capabilities
-- Lots of error handling
-
 ## Installation
 
 Install the gem and add to the application's Gemfile by executing:
