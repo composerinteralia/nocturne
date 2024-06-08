@@ -85,8 +85,7 @@ class SslTest < NocturneTest
   def test_nocturne_connect_ssl_config_tls10
     return skip if server_supported_tls_versions.include?("TLSv1.1")
 
-    # err = assert_raises Nocturne::Error do
-    err = assert_raises do
+    err = assert_raises Nocturne::Error do
       new_tcp_client(database: "test", ssl: true, tls_min_version: Nocturne::TLS_VERSION_10,
         tls_max_version: Nocturne::TLS_VERSION_10, ssl_cipher: "ECDHE-RSA-AES128-SHA")
     end
@@ -114,8 +113,7 @@ class SslTest < NocturneTest
   end
 
   def test_nocturne_connect_ssl_type
-    # err = assert_raises Nocturne::Error do
-    err = assert_raises do
+    err = assert_raises Nocturne::Error do
       new_tcp_client(database: "test", ssl: true, ssl_cipher: "1234", tls_max_version: Nocturne::TLS_VERSION_12)
     end
     assert_includes err.message, "no cipher"
@@ -131,8 +129,7 @@ class SslTest < NocturneTest
 
     sleep 0.1
 
-    # err = assert_raises Nocturne::Error do
-    assert_raises do
+    err = assert_raises Nocturne::Error do
       client.query "SELECT 1"
     end
     # assert_includes err.message, "SSL Error"
@@ -150,8 +147,6 @@ class SslTest < NocturneTest
   end
 
   def ca_cert_path
-    # TODO
-    skip "Not implemented yet"
     ENV["TRILOGY_TEST_CERTS"]
   end
 
