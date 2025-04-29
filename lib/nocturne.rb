@@ -21,7 +21,6 @@ class Nocturne
   include Timeouts
 
   SSL_DISABLE = nil
-  # TODO: These values are meaningless at the moment
   SSL_VERIFY_IDENTITY = 1
   SSL_VERIFY_CA = 2
   SSL_REQUIRED_NOVERIFY = 3

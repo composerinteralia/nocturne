@@ -31,10 +31,10 @@ class Nocturne
           _thread_id = handshake.int32
           auth_plugin_data = handshake.strn(8)
           handshake.skip(1)
-          _capabilities = handshake.int16
+          @capabilities = handshake.int16 << 16
           _character_set = handshake.int8
           @conn.update_status(status_flags: handshake.int16)
-          _capabilities2 = handshake.int16
+          @capabilities |= handshake.int16
           auth_plugin_data_len = handshake.int8
           handshake.skip(10)
           @auth_plugin_data = auth_plugin_data + handshake.strn([13, auth_plugin_data_len - 8].max)
@@ -78,6 +78,14 @@ class Nocturne
       UNUSED = "\0".b * 23
 
       def ssl_request
+        if (@capabilities & CAPABILITIES[:ssl]).zero?
+          if @options[:ssl_mode] == SSL_PREFERRED_NOVERIFY
+            return
+          else
+            raise Nocturne::SSLError, "SSL required, not supported by server"
+          end
+        end
+
         @conn.write_packet do |packet|
           packet.int32(capabilities(ssl: true))
           packet.int32(Protocol::MAX_PAYLOAD_LEN)

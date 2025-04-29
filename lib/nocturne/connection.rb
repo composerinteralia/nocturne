@@ -105,7 +105,7 @@ class Nocturne
     end
 
     def upgrade
-      @sock = @sock.ssl_sock
+      @sock = @sock.upgrade
     end
 
     def close
